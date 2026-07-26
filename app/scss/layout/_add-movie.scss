@@ -1,0 +1,150 @@
+@use '../abstracts/variables';
+@use '../abstracts/mixins' as *;
+
+.admin-container {
+    margin-top: 140px;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+}
+
+.movie-form {
+    max-width: 900px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(232, 201, 153, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+    h2 {
+        margin-bottom: 30px;
+        color: variables.$main_light_color;
+    }
+}
+
+/* FORM GRID */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+}
+
+/* FORM GROUP */
+.form-group {
+    display: flex;
+    flex-direction: column;
+
+    &.full {
+        grid-column: span 2;
+    }
+
+    label {
+        font-size: 13px;
+        margin-bottom: 6px;
+        color: rgba(248, 238, 223, 0.85);
+    }
+
+    input,
+    textarea,
+    select {
+        @include input-style;
+    }
+
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+}
+
+/* CATEGORY PILLS */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.category-pill {
+    cursor: pointer;
+
+    input {
+        display: none;
+    }
+
+    span {
+        display: block;
+        padding: 10px 14px;
+        text-align: center;
+        border-radius: 999px;
+        background: rgba(255, 163, 163, 0.08);
+        color: variables.$main_light_color;
+        border: 1px solid rgba(232, 201, 153, 0.3);
+        font-size: 13px;
+        transition: 0.25s ease;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+    }
+
+    input:checked+span {
+        background: variables.$main_red;
+        border-color: variables.$main_red;
+        color: white;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7);
+    }
+}
+
+/* CAST */
+.cast-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cast-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.remove-cast {
+    @include circle-button(38px);
+
+    &:hover {
+        background: variables.$main_red;
+        border-color: variables.$main_red;
+    }
+}
+
+.add-cast-btn {
+    margin-top: 12px;
+    align-self: flex-start;
+    @include pill-button;
+}
+
+/* FILE INPUT */
+input[type="file"] {
+    @include input-style;
+
+    &::file-selector-button {
+        @include file-button;
+    }
+
+    &::-webkit-file-upload-button {
+        @include file-button;
+    }
+}
+
+/* SUBMIT */
+.submit-btn {
+    margin-top: 30px;
+    @include pill-button(variables.$main_red, white);
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(142, 22, 22, 0.6);
+    }
+}

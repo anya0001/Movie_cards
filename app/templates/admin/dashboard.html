@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | MovieCards{% endblock %}
+
+{% block background %}
+{% include "includes/background.html" %}
+{% endblock %}
+
+{% block header %}
+{% include "includes/header.html" %}
+{% endblock %}
+
+{% block content %}
+<main class="admin-dashboard">
+    <div class="dash-header">
+        <h1>Movie Deck ({{ movies|length }})</h1>
+        <a class="add-link" href="{{ url_for('admin.add_movie') }}">
+            <i class="fa-solid fa-plus"></i> Add Movie
+        </a>
+    </div>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th>Genres</th>
+                    <th>Rating</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movie in movies %}
+                <tr>
+                    <td><img class="poster-thumb" src="{{ movie.poster_url }}" alt=""></td>
+                    <td>{{ movie.title }}</td>
+                    <td>{{ movie.year or "—" }}</td>
+                    <td>{{ movie.genres }}</td>
+                    <td>{{ movie.rating or "—" }}</td>
+                    <td>
+                        <div class="row-actions">
+                            <a href="{{ url_for('admin.edit_movie', movie_id=movie.id) }}" title="Edit">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.delete_movie', movie_id=movie.id) }}"
+                                onsubmit="return confirm('Delete {{ movie.title }}?');">
+                                <button class="delete-btn" type="submit" title="Delete">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr class="admin-empty-row">
+                    <td colspan="6">No movies yet. Add your first one.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}{% endblock %}

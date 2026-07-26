@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Discover Movies | MovieCards{% endblock %}
+
+{% block background %}
+{% include "includes/background.html" %}
+{% endblock %}
+
+{% block header %}
+{% include "includes/header.html" %}
+{% endblock %}
+
+{% block content %}
+<main class="deck-page">
+
+    <div class="deck-stage" id="deckStage">
+
+        <div class="deck-loading" id="deckLoading">
+            <p>Shuffling the deck…</p>
+        </div>
+
+        <div class="card is-hidden" id="movieCard">
+            <div class="card-inner" id="cardInner">
+                <div class="card-face card-front" id="cardFront"></div>
+                <div class="card-face card-back" id="cardBack"></div>
+            </div>
+        </div>
+
+        <div class="deck-empty is-hidden" id="deckEmpty">
+            <h3>You've reached the end of the deck</h3>
+            <p>You've gone through every movie we've got right now. Check your watchlist, or start over.</p>
+            <div class="actions-row">
+                <button id="btnRestart" type="button">Start Over</button>
+                <a href="{{ url_for('main.liked_page') }}">View Watchlist</a>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="deck-controls">
+        <button class="ctrl-btn ctrl-back" id="btnPrev" title="Previous card" disabled>
+            <i class="fa-solid fa-rotate-left"></i>
+        </button>
+        <button class="ctrl-btn ctrl-like" id="btnLike" title="Add to watchlist">
+            <i class="fa-solid fa-heart"></i>
+        </button>
+        <button class="ctrl-btn ctrl-skip" id="btnSkip" title="Skip">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <p class="deck-hint">Tap the card for details &middot; skip, like, or go back</p>
+
+    <div class="trailer-modal is-hidden" id="trailerModal">
+        <div class="trailer-modal-backdrop" data-action="close-trailer"></div>
+        <div class="trailer-modal-content">
+            <button type="button" class="trailer-modal-close" data-action="close-trailer" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="trailer-modal-frame">
+                <iframe id="trailerIframe" src="" title="Trailer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/deck.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,26 @@
+<header class="header">
+    <a href="{{ url_for('main.home') }}" class="logo">
+        <svg class="logo-svg" width="42" height="auto" viewBox="0 0 80 80">
+            <defs>
+                <linearGradient id="netflixRed" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#e50914" />
+                    <stop offset="100%" stop-color="#b00610" />
+                </linearGradient>
+            </defs>
+
+            <text x="0" y="62" font-size="72" font-weight="900" font-family="Arial Black, Impact, sans-serif"
+                fill="url(#netflixRed)" letter-spacing="-6">
+                M
+            </text>
+        </svg>
+        <span class="logo-word">MovieCards</span>
+    </a>
+
+    <nav class="actions">
+        <a href="{{ url_for('main.home') }}" class="nav-link {{ 'active' if request.endpoint == 'main.home' }}">Discover</a>
+
+        <a href="{{ url_for('main.liked_page') }}" class="icon-link {{ 'active' if request.endpoint == 'main.liked_page' }}" title="Watchlist">
+            <i class="fa-solid fa-heart"></i>
+        </a>
+    </nav>
+</header>

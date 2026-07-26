@@ -1,0 +1,50 @@
+@use 'variables' as variables;
+
+@mixin input-style {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(232, 201, 153, 0.2);
+    background: rgba(255, 163, 163, 0.08);
+    color: white;
+    outline: none;
+}
+
+@mixin pill-button($bg: rgba(255, 255, 255, 0.08), $color: variables.$main_light_color) {
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(232, 201, 153, 0.3);
+    background: $bg;
+    color: $color;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+@mixin circle-button($size) {
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    border: 1px solid rgba(232, 201, 153, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+@mixin file-button {
+    background: variables.$main_red;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s ease;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+}

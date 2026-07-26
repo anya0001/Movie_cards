@@ -1,0 +1,146 @@
+@use '../abstracts/variables';
+@use '../abstracts/mixins' as *;
+
+/* LOGIN */
+.admin-login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.admin-login-card {
+    width: 100%;
+    max-width: 360px;
+    padding: 36px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(232, 201, 153, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+    h2 {
+        color: variables.$main_light_color;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+
+        label {
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: rgba(248, 238, 223, 0.85);
+        }
+
+        input {
+            @include input-style;
+        }
+    }
+
+    button {
+        width: 100%;
+        margin-top: 12px;
+        @include pill-button(variables.$main_red, white);
+        justify-content: center;
+
+        &:hover {
+            transform: scale(1.02);
+        }
+    }
+}
+
+/* DASHBOARD */
+.admin-dashboard {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 150px 24px 80px;
+}
+
+.admin-dashboard .dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 14px;
+
+    h1 {
+        color: white;
+        font-size: 1.6rem;
+    }
+
+    .add-link {
+        @include pill-button(variables.$main_red, white);
+        text-decoration: none;
+    }
+}
+
+.admin-table-wrap {
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(232, 201, 153, 0.2);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        text-align: left;
+        padding: 14px 18px;
+        font-size: 0.85rem;
+        color: rgba(248, 238, 223, 0.9);
+        border-bottom: 1px solid rgba(232, 201, 153, 0.12);
+    }
+
+    th {
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        color: rgba(248, 238, 223, 0.5);
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    .poster-thumb {
+        width: 42px;
+        height: 62px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .row-actions {
+        display: flex;
+        gap: 10px;
+
+        a,
+        button {
+            @include circle-button(34px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .delete-btn:hover {
+            background: variables.$main_red;
+            border-color: variables.$main_red;
+        }
+    }
+}
+
+.admin-empty-row td {
+    text-align: center;
+    padding: 40px !important;
+    color: rgba(248, 238, 223, 0.5);
+}

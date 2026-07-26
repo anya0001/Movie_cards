@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Watchlist | MovieCards{% endblock %}
+
+{% block background %}
+{% include "includes/background.html" %}
+{% endblock %}
+
+{% block header %}
+{% include "includes/header.html" %}
+{% endblock %}
+
+{% block content %}
+<main class="liked-page">
+    <h1>Your Watchlist</h1>
+    <p class="subtitle">Movies you've liked while browsing the deck.</p>
+
+    <div class="liked-grid" id="likedGrid"></div>
+
+    <div class="liked-empty" id="likedEmpty" hidden>
+        <p>Nothing here yet — go like a few movies!</p>
+        <a href="{{ url_for('main.home') }}">Back to Discover</a>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/liked.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,25 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: #000000;
+    min-height: 100vh;
+}
+
+/* Static dark background: a subtle diagonal pattern over a black base,
+   with a couple of fixed (non-moving) dark-red glows for depth —
+   no motion, no shapes drifting around. */
+.app-background {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(135deg,
+            rgba(232, 201, 153, 0.035) 0px,
+            rgba(232, 201, 153, 0.035) 1px,
+            transparent 1px,
+            transparent 26px),
+        radial-gradient(circle at 12% 8%, rgba(142, 22, 22, 0.35), transparent 42%),
+        radial-gradient(circle at 88% 92%, rgba(142, 22, 22, 0.28), transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(80, 10, 10, 0.2), transparent 40%),
+        #000000;
+}

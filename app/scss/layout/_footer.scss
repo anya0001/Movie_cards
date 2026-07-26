@@ -1,0 +1,22 @@
+@use '../abstracts/variables';
+
+.site-footer {
+    position: relative;
+    z-index: 1;
+    margin-top: 40px;
+    padding: 24px 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    font-size: 0.75rem;
+    color: rgba(248, 238, 223, 0.4);
+
+    a {
+        color: rgba(248, 238, 223, 0.55);
+
+        &:hover {
+            color: variables.$main_light_color;
+        }
+    }
+}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit" if movie else "Add" }} Movie | Admin{% endblock %}
+
+{% block background %}
+{% include "includes/background.html" %}
+{% endblock %}
+
+{% block header %}
+{% include "includes/header.html" %}
+{% endblock %}
+
+{% block content %}
+<main class="admin-container">
+    <form class="movie-form" method="POST">
+
+        <h2>{{ "Edit Movie" if movie else "Add New Movie" }}</h2>
+
+        <div class="form-grid">
+            <div class="form-group full">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" required value="{{ movie.title if movie else '' }}">
+            </div>
+
+            <div class="form-group full">
+                <label for="poster_url">Poster Image URL</label>
+                <input type="url" id="poster_url" name="poster_url" required placeholder="https://..."
+                    value="{{ movie.poster_url if movie else '' }}">
+            </div>
+
+            <div class="form-group full">
+                <label for="description">Mini Description</label>
+                <textarea id="description" name="description" required>{{ movie.description if movie else '' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="year">Year</label>
+                <input type="number" id="year" name="year" min="1900" max="2100"
+                    value="{{ movie.year if movie else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="runtime_minutes">Runtime (minutes)</label>
+                <input type="number" id="runtime_minutes" name="runtime_minutes" min="1"
+                    value="{{ movie.runtime_minutes if movie else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="rating">Rating (0–10)</label>
+                <input type="number" id="rating" name="rating" min="0" max="10" step="0.1"
+                    value="{{ movie.rating if movie else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="director">Director</label>
+                <input type="text" id="director" name="director" value="{{ movie.director if movie else '' }}">
+            </div>
+
+            <div class="form-group full">
+                <label for="genres">Genres (comma-separated)</label>
+                <input type="text" id="genres" name="genres" placeholder="Drama, Comedy, Sci-Fi"
+                    value="{{ movie.genres if movie else '' }}">
+            </div>
+
+            <div class="form-group full">
+                <label for="cast">Cast (comma-separated)</label>
+                <input type="text" id="cast" name="cast" placeholder="Actor One, Actor Two"
+                    value="{{ movie.cast if movie else '' }}">
+            </div>
+
+            <div class="form-group full">
+                <label for="trailer_url">Trailer URL (YouTube)</label>
+                <input type="url" id="trailer_url" name="trailer_url" placeholder="https://www.youtube.com/watch?v=..."
+                    value="{{ movie.trailer_url if movie else '' }}">
+            </div>
+        </div>
+
+        <button class="submit-btn" type="submit">
+            {{ "Save Changes" if movie else "Add Movie" }}
+        </button>
+    </form>
+</main>
+{% endblock %}
+
+{% block scripts %}{% endblock %}
