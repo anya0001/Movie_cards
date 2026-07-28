@@ -8,8 +8,8 @@
         return `
             <div class="liked-card" data-id="${movie.id}">
                 <img src="${movie.poster_url}" alt="${movie.title}">
-                <button class="unlike-btn" data-action="unlike" title="Remove">
-                    <i class="fa-solid fa-xmark"></i>
+                <button class="unlike-btn" data-action="unlike" title="Remove from watchlist">
+                    <i class="fa-solid fa-heart"></i>
                 </button>
                 <div class="liked-info">
                     <h4>${movie.title}</h4>

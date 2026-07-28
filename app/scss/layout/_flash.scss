@@ -2,7 +2,7 @@
 
 .flash-stack {
     position: fixed;
-    top: 100px;
+    top: calc(variables.$header-height + 16px);
     left: 50%;
     transform: translateX(-50%);
     z-index: 1200;

@@ -58,25 +58,25 @@
 .admin-dashboard {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 150px 24px 80px;
-}
+    padding: calc(variables.$header-height + 40px) 24px 60px;
 
-.admin-dashboard .dash-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    gap: 14px;
+    .dash-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 14px;
 
-    h1 {
-        color: white;
-        font-size: 1.6rem;
-    }
+        h1 {
+            color: white;
+            font-size: 1.6rem;
+        }
 
-    .add-link {
-        @include pill-button(variables.$main_red, white);
-        text-decoration: none;
+        .add-link {
+            @include pill-button(variables.$main_red, white);
+            text-decoration: none;
+        }
     }
 }
 
@@ -86,6 +86,7 @@
     background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(18px);
     border: 1px solid rgba(232, 201, 153, 0.2);
+    overflow-x: auto;
 }
 
 .admin-table {
@@ -99,6 +100,7 @@
         font-size: 0.85rem;
         color: rgba(248, 238, 223, 0.9);
         border-bottom: 1px solid rgba(232, 201, 153, 0.12);
+        white-space: nowrap;
     }
 
     th {
@@ -143,4 +145,10 @@
     text-align: center;
     padding: 40px !important;
     color: rgba(248, 238, 223, 0.5);
+}
+
+@media (max-width: 480px) {
+    .admin-dashboard {
+        padding: calc(variables.$header-height + 24px) 14px 40px;
+    }
 }

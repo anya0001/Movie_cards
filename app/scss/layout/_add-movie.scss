@@ -2,10 +2,10 @@
 @use '../abstracts/mixins' as *;
 
 .admin-container {
-    margin-top: 140px;
+    margin-top: calc(variables.$header-height + 40px);
     display: flex;
     justify-content: center;
-    padding: 0 20px;
+    padding: 0 20px 60px;
 }
 
 .movie-form {

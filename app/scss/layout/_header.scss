@@ -1,55 +1,50 @@
 @use '../abstracts/variables';
 
-
-/* HEADER */
 .header {
     position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 999;
-
-    width: 96%;
-    max-width: 1200px;
+    height: variables.$header-height;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
 
-    padding: 18px 35px;
+    padding: 0 20px;
 
-    background: rgba(255, 163, 163, 0.08);
-    backdrop-filter: blur(25px);
+    background: rgba(10, 4, 4, 0.75);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(232, 201, 153, 0.15);
 
-    border: 1px solid rgba(255, 163, 163, 0.15);
-    border-radius: 25px;
-
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* LOGO */
     .logo {
+        flex: 0 0 auto;
         font-weight: 600;
         font-size: 18px;
         display: flex;
         align-items: center;
         gap: 8px;
         text-decoration: none;
+        min-width: 0;
+
+        .logo-svg {
+            flex-shrink: 0;
+        }
 
         .logo-word {
             color: variables.$main_dark_color;
             letter-spacing: -0.01em;
+            white-space: nowrap;
         }
     }
 
-    /* ACTIONS */
     .actions {
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
-        gap: 18px;
+        gap: 16px;
 
         .nav-link {
             position: relative;
@@ -59,6 +54,7 @@
             text-decoration: none;
             padding: 6px 2px;
             transition: color 0.3s ease;
+            white-space: nowrap;
 
             &:hover {
                 color: white;
@@ -81,8 +77,9 @@
         }
 
         .icon-link {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
             border-radius: 50%;
             background: variables.$main_light_color;
             display: flex;
@@ -98,13 +95,31 @@
                 box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
             }
 
+            &.active {
+                box-shadow: 0 0 0 2px variables.$main_red, 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+
             i {
-                font-size: 16px;
+                font-size: 15px;
             }
         }
     }
-
-
 }
 
+@media (max-width: 480px) {
+    .header {
+        padding: 0 14px;
 
+        .logo .logo-word {
+            font-size: 15px;
+        }
+
+        .actions {
+            gap: 12px;
+
+            .nav-link {
+                font-size: 13px;
+            }
+        }
+    }
+}

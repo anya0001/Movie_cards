@@ -3,27 +3,27 @@
 
 .liked-page {
     min-height: 100vh;
-    padding: 150px 24px 80px;
+    padding: calc(variables.$header-height + 40px) 24px 60px;
     max-width: 1100px;
     margin: 0 auto;
-}
 
-.liked-page h1 {
-    color: white;
-    font-size: 1.8rem;
-    margin-bottom: 6px;
-}
+    h1 {
+        color: white;
+        font-size: 1.8rem;
+        margin-bottom: 6px;
+    }
 
-.liked-page .subtitle {
-    color: rgba(248, 238, 223, 0.6);
-    font-size: 0.9rem;
-    margin-bottom: 34px;
+    .subtitle {
+        color: rgba(248, 238, 223, 0.6);
+        font-size: 0.9rem;
+        margin-bottom: 34px;
+    }
 }
 
 .liked-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 22px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 18px;
 }
 
 .liked-card {
@@ -33,56 +33,56 @@
     background: #000;
     aspect-ratio: 2 / 3;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
 
-.liked-card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-.liked-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 60%);
-}
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 60%);
+    }
 
-.liked-card .liked-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 12px;
-    color: white;
-}
-
-.liked-card .liked-info h4 {
-    font-size: 0.9rem;
-    margin-bottom: 2px;
-}
-
-.liked-card .liked-info span {
-    font-size: 0.72rem;
-    opacity: 0.7;
-}
-
-.liked-card .unlike-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(0, 0, 0, 0.55);
-    color: variables.$main_red;
-    cursor: pointer;
-    font-size: 0.85rem;
-
-    &:hover {
-        background: variables.$main_red;
+    .liked-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 12px;
         color: white;
+
+        h4 {
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        span {
+            font-size: 0.72rem;
+            opacity: 0.7;
+        }
+    }
+
+    .unlike-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(0, 0, 0, 0.55);
+        color: variables.$main_red;
+        cursor: pointer;
+        font-size: 0.85rem;
+
+        &:hover {
+            background: variables.$main_red;
+            color: white;
+        }
     }
 }
 
@@ -96,5 +96,16 @@
         margin-top: 18px;
         text-decoration: none;
         display: inline-flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .liked-page {
+        padding: calc(variables.$header-height + 24px) 16px 40px;
+    }
+
+    .liked-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 12px;
     }
 }

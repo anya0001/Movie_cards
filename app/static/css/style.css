@@ -163,46 +163,45 @@ body {
   background: repeating-linear-gradient(135deg, rgba(232, 201, 153, 0.035) 0px, rgba(232, 201, 153, 0.035) 1px, transparent 1px, transparent 26px), radial-gradient(circle at 12% 8%, rgba(142, 22, 22, 0.35), transparent 42%), radial-gradient(circle at 88% 92%, rgba(142, 22, 22, 0.28), transparent 45%), radial-gradient(circle at 85% 15%, rgba(80, 10, 10, 0.2), transparent 40%), #000000;
 }
 
-/* HEADER */
 .header {
   position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 999;
-  width: 96%;
-  max-width: 1200px;
+  height: 68px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 35px;
-  background: rgba(255, 163, 163, 0.08);
-  backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 163, 163, 0.15);
-  border-radius: 25px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  /* LOGO */
+  gap: 16px;
+  padding: 0 20px;
+  background: rgba(10, 4, 4, 0.75);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(232, 201, 153, 0.15);
 }
 .header .logo {
+  flex: 0 0 auto;
   font-weight: 600;
   font-size: 18px;
   display: flex;
   align-items: center;
   gap: 8px;
   text-decoration: none;
+  min-width: 0;
+}
+.header .logo .logo-svg {
+  flex-shrink: 0;
 }
 .header .logo .logo-word {
   color: #F8EEDF;
   letter-spacing: -0.01em;
-}
-.header {
-  /* ACTIONS */
+  white-space: nowrap;
 }
 .header .actions {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
 }
 .header .actions .nav-link {
   position: relative;
@@ -212,6 +211,7 @@ body {
   text-decoration: none;
   padding: 6px 2px;
   transition: color 0.3s ease;
+  white-space: nowrap;
 }
 .header .actions .nav-link:hover {
   color: white;
@@ -230,8 +230,9 @@ body {
   border-radius: 999px;
 }
 .header .actions .icon-link {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: #E8C999;
   display: flex;
@@ -246,10 +247,27 @@ body {
   transform: scale(1.08);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
 }
+.header .actions .icon-link.active {
+  box-shadow: 0 0 0 2px #8E1616, 0 4px 12px rgba(0, 0, 0, 0.3);
+}
 .header .actions .icon-link i {
-  font-size: 16px;
+  font-size: 15px;
 }
 
+@media (max-width: 480px) {
+  .header {
+    padding: 0 14px;
+  }
+  .header .logo .logo-word {
+    font-size: 15px;
+  }
+  .header .actions {
+    gap: 12px;
+  }
+  .header .actions .nav-link {
+    font-size: 13px;
+  }
+}
 .site-footer {
   position: relative;
   z-index: 1;
@@ -271,7 +289,7 @@ body {
 
 .flash-stack {
   position: fixed;
-  top: 100px;
+  top: 84px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1200;
@@ -312,22 +330,10 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 34px;
-  padding: 160px 20px 80px;
+  gap: 28px;
+  padding: 108px 20px 60px;
 }
-
-.deck-stage {
-  position: relative;
-  width: 300px;
-  height: 460px;
-  perspective: 1600px;
-}
-
-.deck-stage .is-hidden {
-  display: none !important;
-}
-
-.deck-hint {
+.deck-page .deck-hint {
   color: rgba(248, 238, 223, 0.55);
   font-size: 0.8rem;
   letter-spacing: 0.04em;
@@ -335,8 +341,19 @@ body {
   text-align: center;
 }
 
+.deck-stage {
+  position: relative;
+  width: 300px;
+  height: 460px;
+  perspective: 1600px;
+  touch-action: none;
+}
+.deck-stage .is-hidden {
+  display: none !important;
+}
+
 /* =======================
-   CARD (outer object — handles skip/like/prev fly transforms)
+   CARD (outer object — handles skip/like/prev/drag transforms)
 ======================= */
 .card {
   position: absolute;
@@ -344,19 +361,37 @@ body {
   border-radius: 22px;
   transform: translateX(0) translateY(0) rotateZ(0deg) scale(1);
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55);
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.4s ease, filter 0.4s ease;
+}
+
+/* The two "stack position" states every card slot lives in between
+   transitions — this is what creates the illusion of a deck: the behind
+   card is always sitting there, smaller and dimmer, waiting its turn. */
+.card.stack-front {
+  transform: translateY(0) scale(1) rotateZ(0deg);
+  opacity: 1;
+  filter: brightness(1);
+  z-index: 3;
+  pointer-events: auto;
+}
+
+.card.stack-behind {
+  transform: translateY(16px) scale(0.92) rotateZ(0deg);
+  opacity: 0.55;
+  filter: brightness(0.55);
+  z-index: 2;
+  pointer-events: none;
 }
 
 .card.is-hidden {
   display: none !important;
 }
 
-/* =======================
-   CARD-INNER (handles the front <-> info flip)
-======================= */
 .card-inner {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
 }
 
@@ -367,26 +402,19 @@ body {
 .card-face {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
   border-radius: 22px;
   overflow: hidden;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transform-origin: center center;
 }
 
 /* FRONT FACE */
 .card-front {
-  z-index: 2;
-  transform: rotateY(0deg);
   background: #000;
+  transform: rotateY(0deg);
+  -webkit-transform: rotateY(0deg);
+  pointer-events: auto;
 }
-
-.card.flipped .card-front {
-  z-index: 1;
-}
-
 .card-front img {
   position: absolute;
   inset: 0;
@@ -394,14 +422,12 @@ body {
   height: 100%;
   object-fit: cover;
 }
-
 .card-front::before {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 42%, rgba(0, 0, 0, 0.1) 72%, transparent 100%);
 }
-
 .card-front .info {
   position: absolute;
   bottom: 0;
@@ -412,26 +438,22 @@ body {
   color: #fff;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.97) 0%, rgba(0, 0, 0, 0.9) 45%, rgba(0, 0, 0, 0.55) 80%, rgba(0, 0, 0, 0) 100%);
 }
-
 .card-front .info h3 {
   margin: 0 0 6px;
   font-size: 1.3rem;
   font-weight: 700;
 }
-
 .card-front .info .meta {
   margin: 0 0 4px;
   font-size: 0.85rem;
   opacity: 0.85;
 }
-
 .card-front .info .genres-line {
   margin: 0 0 12px;
   font-size: 0.78rem;
   opacity: 0.7;
 }
-
-.see-more-btn {
+.card-front .info .see-more-btn {
   background: none;
   border: none;
   padding: 0;
@@ -444,28 +466,28 @@ body {
   align-items: center;
   gap: 6px;
 }
-.see-more-btn:hover {
+.card-front .info .see-more-btn:hover {
   color: white;
+}
+
+.card.flipped .card-front {
+  pointer-events: none;
 }
 
 /* BACK / INFO FACE */
 .card-back {
-  z-index: 1;
   background: rgba(8, 8, 8, 0.97);
   color: white;
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
+  pointer-events: none;
 }
-
-.card.flipped .card-back {
-  z-index: 2;
-}
-
 .card-back .info-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  touch-action: pan-y;
   padding: 22px 22px 56px;
   display: flex;
   flex-direction: column;
@@ -478,31 +500,26 @@ body {
   background: #8E1616;
   border-radius: 10px;
 }
-
-.card-back h3 {
+.card-back .info-scroll h3 {
   font-size: 1.2rem;
   margin-bottom: 2px;
 }
-
-.card-back .sub-meta {
+.card-back .info-scroll .sub-meta {
   font-size: 0.78rem;
   color: #E8C999;
   opacity: 0.9;
 }
-
-.card-back p.description {
+.card-back .info-scroll p.description {
   font-size: 0.85rem;
   line-height: 1.5;
   opacity: 0.9;
 }
-
-.genre-pills {
+.card-back .info-scroll .genre-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
-
-.genre-pill {
+.card-back .info-scroll .genre-pills .genre-pill {
   font-size: 0.7rem;
   padding: 4px 10px;
   border-radius: 999px;
@@ -510,17 +527,15 @@ body {
   border: 1px solid rgba(232, 201, 153, 0.3);
   color: #E8C999;
 }
-
-.card-back .detail-row {
+.card-back .info-scroll .detail-row {
   font-size: 0.78rem;
   opacity: 0.85;
 }
-.card-back .detail-row strong {
+.card-back .info-scroll .detail-row strong {
   color: #E8C999;
   font-weight: 600;
 }
-
-.trailer-btn {
+.card-back .info-scroll .trailer-btn {
   margin: 4px 0 2px;
   align-self: flex-start;
   padding: 10px 18px;
@@ -536,8 +551,7 @@ body {
   font-size: 0.78rem;
   padding: 8px 16px;
 }
-
-.go-back-btn {
+.card-back .go-back-btn {
   position: absolute;
   bottom: 14px;
   left: 14px;
@@ -551,9 +565,13 @@ body {
   cursor: pointer;
   backdrop-filter: blur(6px);
 }
-.go-back-btn:hover {
+.card-back .go-back-btn:hover {
   background: #8E1616;
   color: white;
+}
+
+.card.flipped .card-back {
+  pointer-events: auto;
 }
 
 /* =======================
@@ -568,25 +586,21 @@ body {
   justify-content: center;
   padding: 24px;
 }
-
 .trailer-modal.is-hidden {
   display: none !important;
 }
-
-.trailer-modal-backdrop {
+.trailer-modal .trailer-modal-backdrop {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.88);
   backdrop-filter: blur(8px);
 }
-
-.trailer-modal-content {
+.trailer-modal .trailer-modal-content {
   position: relative;
   width: min(94vw, 1000px);
   z-index: 1;
 }
-
-.trailer-modal-frame {
+.trailer-modal .trailer-modal-content .trailer-modal-frame {
   position: relative;
   width: 100%;
   aspect-ratio: 16/9;
@@ -595,16 +609,14 @@ body {
   background: #000;
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(232, 201, 153, 0.2);
 }
-
-.trailer-modal-frame iframe {
+.trailer-modal .trailer-modal-content .trailer-modal-frame iframe {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   border: none;
 }
-
-.trailer-modal-close {
+.trailer-modal .trailer-modal-content .trailer-modal-close {
   position: absolute;
   top: -48px;
   right: 0;
@@ -620,17 +632,17 @@ body {
   align-items: center;
   justify-content: center;
 }
-.trailer-modal-close:hover {
+.trailer-modal .trailer-modal-content .trailer-modal-close:hover {
   background: #8E1616;
 }
 
 @media (max-width: 480px) {
-  .trailer-modal-close {
+  .trailer-modal .trailer-modal-content .trailer-modal-close {
     top: -44px;
   }
 }
 /* =======================
-   FLY-OUT / FLY-IN TRANSITIONS
+   FLY-OUT / FLY-IN TRANSITIONS (button-triggered)
 ======================= */
 @keyframes flyOutRight {
   0% {
@@ -660,9 +672,9 @@ body {
     opacity: 0;
   }
 }
-@keyframes flyInFromLeft {
+@keyframes flyInFromRight {
   0% {
-    transform: translateX(-135%) rotateZ(-14deg);
+    transform: translateX(135%) rotateZ(14deg);
     opacity: 0;
   }
   35% {
@@ -670,6 +682,19 @@ body {
   }
   100% {
     transform: translateX(0) rotateZ(0deg);
+    opacity: 1;
+  }
+}
+@keyframes flyInFromTop {
+  0% {
+    transform: translateY(-135%) rotateZ(-12deg);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) rotateZ(0deg);
     opacity: 1;
   }
 }
@@ -683,7 +708,6 @@ body {
     opacity: 1;
   }
 }
-/* solid, weighty motion — no axis flip, no shrinking, just a firm toss */
 .card.flying-skip {
   animation: flyOutRight 0.45s cubic-bezier(0.3, 0, 0.4, 1) forwards;
 }
@@ -692,12 +716,47 @@ body {
   animation: flyOutLike 0.45s cubic-bezier(0.3, 0, 0.4, 1) forwards;
 }
 
-.card.flying-in {
-  animation: flyInFromLeft 0.4s cubic-bezier(0.2, 0.5, 0.3, 1) forwards;
+.card.flying-in-right {
+  animation: flyInFromRight 0.4s cubic-bezier(0.2, 0.5, 0.3, 1) forwards;
+}
+
+.card.flying-in-top {
+  animation: flyInFromTop 0.4s cubic-bezier(0.2, 0.5, 0.3, 1) forwards;
 }
 
 .card.entering {
   animation: cardEnter 0.3s ease forwards;
+}
+
+/* =======================
+   HEART POP (double-tap-to-like, TikTok style)
+======================= */
+@keyframes heartPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 1;
+  }
+  45% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0;
+  }
+}
+.heart-pop {
+  position: fixed;
+  z-index: 4000;
+  pointer-events: none;
+  color: #8E1616;
+  font-size: 84px;
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.6);
+  animation: heartPop 0.7s ease-out forwards;
 }
 
 /* =======================
@@ -708,8 +767,7 @@ body {
   align-items: center;
   gap: 26px;
 }
-
-.ctrl-btn {
+.deck-controls .ctrl-btn {
   width: 58px;
   height: 58px;
   border-radius: 50%;
@@ -725,24 +783,21 @@ body {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-.ctrl-btn:hover {
+.deck-controls .ctrl-btn:hover {
   transform: scale(1.1);
 }
-.ctrl-btn:disabled {
+.deck-controls .ctrl-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
   transform: none;
 }
-
-.ctrl-back {
+.deck-controls .ctrl-back {
   color: #E8C999;
 }
-
-.ctrl-skip {
+.deck-controls .ctrl-skip {
   color: #ccc;
 }
-
-.ctrl-like {
+.deck-controls .ctrl-like {
   width: 66px;
   height: 66px;
   font-size: 1.4rem;
@@ -750,7 +805,7 @@ body {
   border-color: #8E1616;
   color: white;
 }
-.ctrl-like:hover {
+.deck-controls .ctrl-like:hover {
   box-shadow: 0 0 24px rgba(142, 22, 22, 0.75);
 }
 
@@ -761,6 +816,7 @@ body {
 .deck-loading {
   position: absolute;
   inset: 0;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -779,18 +835,15 @@ body {
   color: white;
   font-size: 1.2rem;
 }
-
 .deck-empty p {
   font-size: 0.85rem;
   opacity: 0.8;
 }
-
 .deck-empty .actions-row {
   display: flex;
   gap: 12px;
   margin-top: 8px;
 }
-
 .deck-empty .actions-row a,
 .deck-empty .actions-row button {
   padding: 10px 18px;
@@ -811,29 +864,32 @@ body {
    RESPONSIVE / MOBILE
 ======================= */
 @media (max-width: 480px) {
-  .deck-stage {
-    width: 86vw;
-    max-width: 320px;
-    height: 62vh;
-    max-height: 480px;
-  }
   .deck-page {
-    padding-top: 130px;
+    padding: 92px 16px 40px;
+    gap: 20px;
+  }
+  .deck-stage {
+    width: 88vw;
+    max-width: 340px;
+    height: 64vh;
+    max-height: 480px;
+    min-height: 380px;
+  }
+  .heart-pop {
+    font-size: 68px;
   }
 }
 .liked-page {
   min-height: 100vh;
-  padding: 150px 24px 80px;
+  padding: 108px 24px 60px;
   max-width: 1100px;
   margin: 0 auto;
 }
-
 .liked-page h1 {
   color: white;
   font-size: 1.8rem;
   margin-bottom: 6px;
 }
-
 .liked-page .subtitle {
   color: rgba(248, 238, 223, 0.6);
   font-size: 0.9rem;
@@ -842,8 +898,8 @@ body {
 
 .liked-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 18px;
 }
 
 .liked-card {
@@ -854,20 +910,17 @@ body {
   aspect-ratio: 2/3;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
-
 .liked-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .liked-card::before {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 60%);
 }
-
 .liked-card .liked-info {
   position: absolute;
   bottom: 0;
@@ -876,17 +929,14 @@ body {
   padding: 12px;
   color: white;
 }
-
 .liked-card .liked-info h4 {
   font-size: 0.9rem;
   margin-bottom: 2px;
 }
-
 .liked-card .liked-info span {
   font-size: 0.72rem;
   opacity: 0.7;
 }
-
 .liked-card .unlike-btn {
   position: absolute;
   top: 10px;
@@ -926,11 +976,20 @@ body {
   display: inline-flex;
 }
 
+@media (max-width: 480px) {
+  .liked-page {
+    padding: 92px 16px 40px;
+  }
+  .liked-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+}
 .admin-container {
-  margin-top: 140px;
+  margin-top: 108px;
   display: flex;
   justify-content: center;
-  padding: 0 20px;
+  padding: 0 20px 60px;
 }
 
 .movie-form {
@@ -1183,9 +1242,8 @@ input[type=file]::-webkit-file-upload-button:hover {
 .admin-dashboard {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 150px 24px 80px;
+  padding: 108px 24px 60px;
 }
-
 .admin-dashboard .dash-header {
   display: flex;
   align-items: center;
@@ -1218,6 +1276,7 @@ input[type=file]::-webkit-file-upload-button:hover {
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(18px);
   border: 1px solid rgba(232, 201, 153, 0.2);
+  overflow-x: auto;
 }
 
 .admin-table {
@@ -1231,6 +1290,7 @@ input[type=file]::-webkit-file-upload-button:hover {
   font-size: 0.85rem;
   color: rgba(248, 238, 223, 0.9);
   border-bottom: 1px solid rgba(232, 201, 153, 0.12);
+  white-space: nowrap;
 }
 .admin-table th {
   text-transform: uppercase;
@@ -1275,4 +1335,10 @@ input[type=file]::-webkit-file-upload-button:hover {
   text-align: center;
   padding: 40px !important;
   color: rgba(248, 238, 223, 0.5);
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard {
+    padding: 92px 14px 40px;
+  }
 }
