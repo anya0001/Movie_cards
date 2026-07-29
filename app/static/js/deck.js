@@ -11,6 +11,8 @@
     const btnLike = document.getElementById("btnLike");
     const btnRestart = document.getElementById("btnRestart");
 
+    const { loadMovieIntoCard, setHeartState } = window.MovieCardTemplate;
+
     const trailerModal = document.getElementById("trailerModal");
     const trailerIframe = document.getElementById("trailerIframe");
 
@@ -33,66 +35,6 @@
 
     function behindEl() {
         return slots[1 - frontIdx];
-    }
-
-    function fmtMeta(movie) {
-        const parts = [];
-        if (movie.year) parts.push(movie.year);
-        if (movie.rating) parts.push(`\u2605 ${movie.rating}`);
-        return parts.join(" \u2022 ");
-    }
-
-    function frontHTML(movie) {
-        return `
-            <img src="${movie.poster_url}" alt="${movie.title}">
-            <div class="info">
-                <h3>${movie.title}</h3>
-                <p class="meta">${fmtMeta(movie)}</p>
-                <p class="genres-line">${movie.genres.join(", ")}</p>
-                <button type="button" class="see-more-btn" data-action="flip-info">
-                    <i class="fa-solid fa-circle-info"></i> See more
-                </button>
-            </div>
-        `;
-    }
-
-    function backHTML(movie) {
-        const director = movie.director
-            ? `<p class="detail-row"><strong>Director:</strong> ${movie.director}</p>`
-            : "";
-        const runtime = movie.runtime_minutes
-            ? `<p class="detail-row"><strong>Runtime:</strong> ${movie.runtime_minutes} min</p>`
-            : "";
-        const cast = movie.cast && movie.cast.length
-            ? `<p class="detail-row"><strong>Cast:</strong> ${movie.cast.join(", ")}</p>`
-            : "";
-        const trailerBtn = movie.trailer_embed_url
-            ? `<button type="button" class="trailer-btn" data-action="show-trailer">
-                   <i class="fa-solid fa-play"></i> Watch Trailer
-               </button>`
-            : "";
-
-        return `
-            <div class="info-scroll" data-panel="info">
-                <h3>${movie.title}</h3>
-                <p class="sub-meta">${fmtMeta(movie)}</p>
-                <p class="description">${movie.description}</p>
-                <div class="genre-pills">
-                    ${movie.genres.map((g) => `<span class="genre-pill">${g}</span>`).join("")}
-                </div>
-                ${director}
-                ${runtime}
-                ${cast}
-                ${trailerBtn}
-            </div>
-            <button type="button" class="go-back-btn" data-action="flip-front">&larr; Back</button>
-        `;
-    }
-
-    function loadMovieIntoCard(el, movie) {
-        el.querySelector(".card-front").innerHTML = frontHTML(movie);
-        el.querySelector(".card-back").innerHTML = backHTML(movie);
-        el.classList.remove("flipped");
     }
 
     function clearInlineTransform(el) {
@@ -139,6 +81,11 @@
         btnPrev.disabled = pointer <= 0;
         btnSkip.disabled = isExhausted();
         btnLike.disabled = isExhausted();
+
+        const movie = order[pointer];
+        const liked = !!(movie && movie.liked);
+        btnLike.classList.toggle("is-liked", liked);
+        btnLike.title = liked ? "Remove from watchlist" : "Add to watchlist";
     }
 
     async function loadDeck() {
@@ -277,11 +224,10 @@
         const direction = exitDirections[pointer];
         const movie = order[pointer];
 
-        // If we're undoing a "like", remove it from the watchlist too —
-        // otherwise it'd stay liked AND come back into the deck.
-        if (direction === "up") {
-            fetch(`/api/movies/${movie.id}/unlike`, { method: "POST" }).catch(() => {});
-        }
+        // Going back never unlikes the card anymore — a liked movie stays
+        // liked (and its heart shows filled) until the person taps the
+        // heart badge itself. The card still flies back in from the top
+        // if that's the direction it left in.
 
         // Current front quietly recedes into the behind position.
         receding.classList.remove("stack-front");
@@ -312,12 +258,48 @@
         if (busy || isExhausted()) return;
         const movie = order[pointer];
         if (!movie) return;
+        movie.liked = true;
         try {
             await fetch(`/api/movies/${movie.id}/like`, { method: "POST" });
         } catch (err) {
             // ignore network errors — still advance locally
         }
         advance(exitAnimFn || ((el) => runExitAnimation(el, "flying-like")), "up");
+    }
+
+    // ---- Heart badge on the card itself — a direct like/unlike toggle that
+    //      never moves the card. Independent from the skip/like swipe
+    //      gestures below, which advance the card off the deck.
+    async function toggleLikeOnCard(el) {
+        if (!el || el !== frontEl()) return;
+        const movie = order[pointer];
+        if (!movie) return;
+
+        const nextLiked = !movie.liked;
+        movie.liked = nextLiked;
+        setHeartState(el, nextLiked);
+
+        btnLike.classList.toggle("is-liked", nextLiked);
+        btnLike.title = nextLiked ? "Remove from watchlist" : "Add to watchlist";
+
+        const heartBtn = el.querySelector(".like-heart");
+        if (heartBtn) {
+            heartBtn.classList.remove("pop");
+            void heartBtn.offsetWidth;
+            heartBtn.classList.add("pop");
+            if (nextLiked) {
+                const rect = heartBtn.getBoundingClientRect();
+                spawnHeart(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            }
+        }
+
+        try {
+            await fetch(`/api/movies/${movie.id}/${nextLiked ? "like" : "unlike"}`, {
+                method: "POST",
+            });
+        } catch (err) {
+            // ignore network errors — local state already reflects the tap
+        }
     }
 
     // ---- Heart pop (double-tap / swipe-up like) ---------------------------
@@ -356,7 +338,9 @@
         const action = target.dataset.action;
         const el = frontEl();
 
-        if (action === "flip-info") {
+        if (action === "toggle-like") {
+            toggleLikeOnCard(el);
+        } else if (action === "flip-info") {
             el.classList.add("flipped");
         } else if (action === "flip-front") {
             el.classList.remove("flipped");
@@ -394,11 +378,20 @@
     });
 
     btnSkip.addEventListener("click", skipAction);
-    btnLike.addEventListener("click", () => {
-        const rect = btnLike.getBoundingClientRect();
-        likeAction(rect.left + rect.width / 2, rect.top + rect.height / 2);
-    });
     btnPrev.addEventListener("click", prevAction);
+    btnLike.addEventListener("click", () => {
+        if (busy || isExhausted()) return;
+        btnLike.classList.remove("pop");
+        void btnLike.offsetWidth;
+        btnLike.classList.add("pop");
+
+        const willLike = !(order[pointer] && order[pointer].liked);
+        if (willLike) {
+            const rect = btnLike.getBoundingClientRect();
+            spawnHeart(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        }
+        toggleLikeOnCard(frontEl());
+    });
     if (btnRestart) btnRestart.addEventListener("click", loadDeck);
 
     // ---- Touch: swipe right = skip, swipe left/down = previous,

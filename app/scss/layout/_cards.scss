@@ -5,13 +5,13 @@
    DECK PAGE LAYOUT
 ======================= */
 .deck-page {
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 28px;
-    padding: calc(variables.$header-height + 40px) 20px 60px;
+    gap: clamp(14px, 3dvh, 28px);
+    padding: calc(variables.$header-height + 24px) 20px calc(variables.$header-height * 0.5 + 20px);
 
     .deck-hint {
         color: rgba(248, 238, 223, 0.55);
@@ -24,8 +24,7 @@
 
 .deck-stage {
     position: relative;
-    width: 300px;
-    height: 460px;
+    @include fluid-card-size;
     perspective: 1600px;
     touch-action: none;
 
@@ -116,6 +115,50 @@
                 rgba(0, 0, 0, 0.5) 42%,
                 rgba(0, 0, 0, 0.1) 72%,
                 transparent 100%);
+    }
+
+    .like-heart {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 4;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+
+        svg {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 1.8;
+            transition: fill 0.2s ease, stroke 0.2s ease;
+        }
+
+        &:hover {
+            transform: scale(1.08);
+            background: rgba(0, 0, 0, 0.55);
+        }
+
+        &.is-liked {
+            border-color: variables.$main_red;
+            background: rgba(142, 22, 22, 0.35);
+
+            svg {
+                fill: variables.$main_red;
+                stroke: variables.$main_red;
+            }
+        }
+
+        &.pop {
+            animation: heartBadgePop 0.32s ease;
+        }
     }
 
     .info {
@@ -422,6 +465,20 @@
     }
 }
 
+@keyframes heartBadgePop {
+    0% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.35);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
 @keyframes cardEnter {
     from {
         transform: scale(0.97) translateY(10px);
@@ -495,26 +552,41 @@
 .deck-controls {
     display: flex;
     align-items: center;
-    gap: 26px;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 340px;
 
     .ctrl-btn {
-        width: 58px;
-        height: 58px;
-        border-radius: 50%;
-        border: 1px solid rgba(232, 201, 153, 0.25);
-        background: rgba(255, 255, 255, 0.06);
-        backdrop-filter: blur(10px);
-        color: white;
-        cursor: pointer;
-        font-size: 1.2rem;
-        display: flex;
+        flex: 1;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        gap: 8px;
+        padding: 11px 0;
+        border-radius: 999px;
+        border: 1px solid rgba(232, 201, 153, 0.28);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        color: variables.$main_light_color;
+        cursor: pointer;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+
+        i {
+            font-size: 0.9rem;
+        }
 
         &:hover {
-            transform: scale(1.1);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.09);
+        }
+
+        &:active {
+            transform: translateY(0);
         }
 
         &:disabled {
@@ -524,24 +596,37 @@
         }
     }
 
-    .ctrl-back {
-        color: variables.$main_light_color;
-    }
-
     .ctrl-skip {
-        color: #ccc;
+        color: #ddd;
+        border-color: rgba(255, 255, 255, 0.16);
     }
 
     .ctrl-like {
-        width: 66px;
-        height: 66px;
-        font-size: 1.4rem;
-        background: variables.$main_red;
-        border-color: variables.$main_red;
-        color: white;
+        flex: 0 0 auto;
+        width: 52px;
+        height: 52px;
+        padding: 0;
+        border-radius: 50%;
+        font-size: 1.15rem;
+        transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 
         &:hover {
-            box-shadow: 0 0 24px rgba(142, 22, 22, 0.75);
+            transform: translateY(-2px) scale(1.06);
+        }
+
+        &.pop {
+            animation: heartBadgePop 0.32s ease;
+        }
+
+        &.is-liked {
+            background: variables.$main_red;
+            border-color: variables.$main_red;
+            color: white;
+            box-shadow: 0 8px 22px rgba(142, 22, 22, 0.45);
+
+            &:hover {
+                box-shadow: 0 10px 26px rgba(142, 22, 22, 0.6);
+            }
         }
     }
 }
@@ -598,19 +683,30 @@
 ======================= */
 @media (max-width: 480px) {
     .deck-page {
-        padding: calc(variables.$header-height + 24px) 16px 40px;
-        gap: 20px;
+        padding: calc(variables.$header-height + 16px) 16px 24px;
     }
 
-    .deck-stage {
-        width: 88vw;
-        max-width: 340px;
-        height: 64vh;
-        max-height: 480px;
-        min-height: 380px;
+    .deck-controls {
+        max-width: 300px;
     }
 
     .heart-pop {
         font-size: 68px;
+    }
+}
+
+// Very short viewports (landscape phones, small laptop windows, ultra-wide
+// low-height desktops) — trim the surrounding chrome further so the card
+// itself (already height-aware via fluid-card-size) never has to compete
+// with page scroll.
+@media (max-height: 700px) {
+    .deck-page {
+        padding-top: calc(variables.$header-height + 12px);
+        padding-bottom: 12px;
+        gap: 10px;
+    }
+
+    .deck-hint {
+        display: none;
     }
 }

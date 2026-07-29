@@ -47,16 +47,18 @@
     <div class="deck-controls">
         <button class="ctrl-btn ctrl-back" id="btnPrev" title="Previous card" disabled>
             <i class="fa-solid fa-rotate-left"></i>
+            <span>Back</span>
         </button>
-        <button class="ctrl-btn ctrl-like" id="btnLike" title="Add to watchlist">
+        <button class="ctrl-btn ctrl-like" id="btnLike" title="Like">
             <i class="fa-solid fa-heart"></i>
         </button>
         <button class="ctrl-btn ctrl-skip" id="btnSkip" title="Skip">
+            <span>Skip</span>
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
-    <p class="deck-hint">Tap the card for details &middot; skip, like, or go back</p>
+    <p class="deck-hint">Tap the heart to like &middot; swipe or tap to browse</p>
 
     <div class="trailer-modal is-hidden" id="trailerModal">
         <div class="trailer-modal-backdrop" data-action="close-trailer"></div>
@@ -75,5 +77,6 @@
 
 {% block scripts %}
 {{ super() }}
+<script src="{{ url_for('static', filename='js/card-template.js') }}"></script>
 <script src="{{ url_for('static', filename='js/deck.js') }}"></script>
 {% endblock %}

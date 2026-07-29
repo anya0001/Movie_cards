@@ -325,13 +325,13 @@ body {
    DECK PAGE LAYOUT
 ======================= */
 .deck-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
-  padding: 108px 20px 60px;
+  gap: clamp(14px, 3dvh, 28px);
+  padding: 92px 20px 54px;
 }
 .deck-page .deck-hint {
   color: rgba(248, 238, 223, 0.55);
@@ -343,10 +343,21 @@ body {
 
 .deck-stage {
   position: relative;
-  width: 300px;
-  height: 460px;
+  width: min(92vw, 400px, calc(62dvh * 0.652));
+  aspect-ratio: 300/460;
+  height: auto;
   perspective: 1600px;
   touch-action: none;
+}
+@media (min-width: 640px) {
+  .deck-stage {
+    width: min(64vw, 450px, calc(66dvh * 0.652));
+  }
+}
+@media (min-width: 1024px) {
+  .deck-stage {
+    width: min(46vw, 500px, calc(70dvh * 0.652));
+  }
 }
 .deck-stage .is-hidden {
   display: none !important;
@@ -427,6 +438,44 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 42%, rgba(0, 0, 0, 0.1) 72%, transparent 100%);
+}
+.card-front .like-heart {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 4;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.card-front .like-heart svg {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.8;
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+.card-front .like-heart:hover {
+  transform: scale(1.08);
+  background: rgba(0, 0, 0, 0.55);
+}
+.card-front .like-heart.is-liked {
+  border-color: #8E1616;
+  background: rgba(142, 22, 22, 0.35);
+}
+.card-front .like-heart.is-liked svg {
+  fill: #8E1616;
+  stroke: #8E1616;
+}
+.card-front .like-heart.pop {
+  animation: heartBadgePop 0.32s ease;
 }
 .card-front .info {
   position: absolute;
@@ -698,6 +747,17 @@ body {
     opacity: 1;
   }
 }
+@keyframes heartBadgePop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 @keyframes cardEnter {
   from {
     transform: scale(0.97) translateY(10px);
@@ -765,48 +825,72 @@ body {
 .deck-controls {
   display: flex;
   align-items: center;
-  gap: 26px;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 340px;
 }
 .deck-controls .ctrl-btn {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  border: 1px solid rgba(232, 201, 153, 0.25);
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(10px);
-  color: white;
-  cursor: pointer;
-  font-size: 1.2rem;
-  display: flex;
+  flex: 1;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  gap: 8px;
+  padding: 11px 0;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 201, 153, 0.28);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: #E8C999;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+.deck-controls .ctrl-btn i {
+  font-size: 0.9rem;
 }
 .deck-controls .ctrl-btn:hover {
-  transform: scale(1.1);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.09);
+}
+.deck-controls .ctrl-btn:active {
+  transform: translateY(0);
 }
 .deck-controls .ctrl-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
   transform: none;
 }
-.deck-controls .ctrl-back {
-  color: #E8C999;
-}
 .deck-controls .ctrl-skip {
-  color: #ccc;
+  color: #ddd;
+  border-color: rgba(255, 255, 255, 0.16);
 }
 .deck-controls .ctrl-like {
-  width: 66px;
-  height: 66px;
-  font-size: 1.4rem;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.15rem;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.deck-controls .ctrl-like:hover {
+  transform: translateY(-2px) scale(1.06);
+}
+.deck-controls .ctrl-like.pop {
+  animation: heartBadgePop 0.32s ease;
+}
+.deck-controls .ctrl-like.is-liked {
   background: #8E1616;
   border-color: #8E1616;
   color: white;
+  box-shadow: 0 8px 22px rgba(142, 22, 22, 0.45);
 }
-.deck-controls .ctrl-like:hover {
-  box-shadow: 0 0 24px rgba(142, 22, 22, 0.75);
+.deck-controls .ctrl-like.is-liked:hover {
+  box-shadow: 0 10px 26px rgba(142, 22, 22, 0.6);
 }
 
 /* =======================
@@ -865,18 +949,23 @@ body {
 ======================= */
 @media (max-width: 480px) {
   .deck-page {
-    padding: 92px 16px 40px;
-    gap: 20px;
+    padding: 84px 16px 24px;
   }
-  .deck-stage {
-    width: 88vw;
-    max-width: 340px;
-    height: 64vh;
-    max-height: 480px;
-    min-height: 380px;
+  .deck-controls {
+    max-width: 300px;
   }
   .heart-pop {
     font-size: 68px;
+  }
+}
+@media (max-height: 700px) {
+  .deck-page {
+    padding-top: 80px;
+    padding-bottom: 12px;
+    gap: 10px;
+  }
+  .deck-hint {
+    display: none;
   }
 }
 .liked-page {
@@ -909,6 +998,15 @@ body {
   background: #000;
   aspect-ratio: 2/3;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.liked-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+.liked-card.is-source-active {
+  visibility: hidden;
 }
 .liked-card img {
   width: 100%;
@@ -985,6 +1083,66 @@ body {
     gap: 12px;
   }
 }
+@media (min-width: 700px) {
+  .liked-page {
+    max-width: 1200px;
+  }
+  .liked-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 22px;
+  }
+}
+@media (min-width: 1100px) {
+  .liked-grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 26px;
+  }
+}
+
+/* =======================
+   DETAIL OVERLAY (click a watchlist card to expand it)
+======================= */
+.liked-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.liked-overlay.is-hidden {
+  display: none !important;
+}
+.liked-overlay .liked-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.liked-overlay.is-visible .liked-overlay-backdrop {
+  opacity: 1;
+}
+.liked-overlay .liked-overlay-stage {
+  position: relative;
+  width: min(92vw, 400px, calc(62dvh * 0.652));
+  aspect-ratio: 300/460;
+  height: auto;
+  z-index: 1;
+}
+@media (min-width: 640px) {
+  .liked-overlay .liked-overlay-stage {
+    width: min(64vw, 450px, calc(66dvh * 0.652));
+  }
+}
+@media (min-width: 1024px) {
+  .liked-overlay .liked-overlay-stage {
+    width: min(46vw, 500px, calc(70dvh * 0.652));
+  }
+}
+
 .admin-container {
   margin-top: 108px;
   display: flex;

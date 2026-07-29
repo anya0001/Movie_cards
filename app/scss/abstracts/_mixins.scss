@@ -33,6 +33,25 @@
     transition: 0.2s ease;
 }
 
+// Card width is bounded by three things at once: a share of the viewport
+// width, a share of the viewport height (via the card's own aspect ratio,
+// so it can never force page scroll on short/wide screens), and a hard
+// pixel ceiling so it doesn't balloon on huge displays. `aspect-ratio` then
+// derives the height, so only width needs to flex.
+@mixin fluid-card-size {
+    width: min(92vw, 400px, calc(62dvh * 0.652));
+    aspect-ratio: 300 / 460;
+    height: auto;
+
+    @media (min-width: 640px) {
+        width: min(64vw, 450px, calc(66dvh * 0.652));
+    }
+
+    @media (min-width: 1024px) {
+        width: min(46vw, 500px, calc(70dvh * 0.652));
+    }
+}
+
 @mixin file-button {
     background: variables.$main_red;
     color: white;

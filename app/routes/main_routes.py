@@ -86,6 +86,16 @@ def api_liked():
     if not session_id:
         return jsonify([])
 
-    liked_ids = [row.movie_id for row in Like.query.filter_by(session_id=session_id).all()]
-    movies = Movie.query.filter(Movie.id.in_(liked_ids)).all()
-    return jsonify([m.to_dict() for m in movies])
+    # Most-recently-liked first, so the watchlist reads as "recently added".
+    likes = (
+        Like.query.filter_by(session_id=session_id)
+        .order_by(Like.created_at.desc(), Like.id.desc())
+        .all()
+    )
+    liked_ids_in_order = [row.movie_id for row in likes]
+    movies_by_id = {
+        m.id: m for m in Movie.query.filter(Movie.id.in_(liked_ids_in_order)).all()
+    }
+    return jsonify([
+        movies_by_id[mid].to_dict() for mid in liked_ids_in_order if mid in movies_by_id
+    ])

@@ -21,10 +21,35 @@
         <p>Nothing here yet — go like a few movies!</p>
         <a href="{{ url_for('main.home') }}">Back to Discover</a>
     </div>
+
+    <div class="liked-overlay is-hidden" id="likedOverlay">
+        <div class="liked-overlay-backdrop"></div>
+        <div class="liked-overlay-stage">
+            <div class="card" id="likedDetailCard">
+                <div class="card-inner">
+                    <div class="card-face card-front"></div>
+                    <div class="card-face card-back"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="trailer-modal is-hidden" id="trailerModal">
+        <div class="trailer-modal-backdrop" data-action="close-trailer"></div>
+        <div class="trailer-modal-content">
+            <button type="button" class="trailer-modal-close" data-action="close-trailer" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="trailer-modal-frame">
+                <iframe id="trailerIframe" src="" title="Trailer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
 </main>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
+<script src="{{ url_for('static', filename='js/card-template.js') }}"></script>
 <script src="{{ url_for('static', filename='js/liked.js') }}"></script>
 {% endblock %}
