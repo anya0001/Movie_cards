@@ -57,9 +57,16 @@
             </div>
 
             <div class="form-group full">
-                <label for="genres">Genres (comma-separated)</label>
-                <input type="text" id="genres" name="genres" placeholder="Drama, Comedy, Sci-Fi"
-                    value="{{ movie.genres if movie else '' }}">
+                <label>Genres <span class="label-hint">(select all that apply)</span></label>
+                <div class="category-grid">
+                    {% set movie_genres = movie.genre_list() if movie else [] %}
+                    {% for g in all_genres %}
+                    <label class="category-pill">
+                        <input type="checkbox" name="genres" value="{{ g }}" {{ "checked" if g in movie_genres }}>
+                        <span>{{ g }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
             </div>
 
             <div class="form-group full">

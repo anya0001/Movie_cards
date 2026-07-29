@@ -11,6 +11,10 @@
     const btnLike = document.getElementById("btnLike");
     const btnRestart = document.getElementById("btnRestart");
 
+    const searchInput = document.getElementById("siteSearchInput");
+    const deckEmptyTitle = deckEmpty ? deckEmpty.querySelector("h3") : null;
+    const deckEmptyText = deckEmpty ? deckEmpty.querySelector("p") : null;
+
     const { loadMovieIntoCard, setHeartState } = window.MovieCardTemplate;
 
     const trailerModal = document.getElementById("trailerModal");
@@ -88,14 +92,21 @@
         btnLike.title = liked ? "Remove from watchlist" : "Add to watchlist";
     }
 
+    function hasActiveFilters() {
+        return !!(searchInput && searchInput.value.trim());
+    }
+
     async function loadDeck() {
         deckLoading.classList.remove("is-hidden");
         cardA.classList.add("is-hidden");
         cardB.classList.add("is-hidden");
         deckEmpty.classList.add("is-hidden");
 
+        const params = new URLSearchParams();
+        if (searchInput && searchInput.value.trim()) params.set("q", searchInput.value.trim());
+
         try {
-            const res = await fetch("/api/movies");
+            const res = await fetch(`/api/movies${params.toString() ? "?" + params.toString() : ""}`);
             order = await res.json();
         } catch (err) {
             order = [];
@@ -106,6 +117,15 @@
         updateControls();
 
         if (order.length === 0) {
+            if (deckEmptyTitle && deckEmptyText) {
+                if (hasActiveFilters()) {
+                    deckEmptyTitle.textContent = "No movies match";
+                    deckEmptyText.textContent = "Try a different search or genre.";
+                } else {
+                    deckEmptyTitle.textContent = "You've reached the end of the deck";
+                    deckEmptyText.textContent = "You've gone through every movie we've got right now. Check your watchlist, or start over.";
+                }
+            }
             showEmpty();
             return;
         }
@@ -393,6 +413,18 @@
         toggleLikeOnCard(frontEl());
     });
     if (btnRestart) btnRestart.addEventListener("click", loadDeck);
+
+    // ---- Search — refetch the deck whenever it changes ----
+
+    let searchDebounceTimer = null;
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                if (!busy) loadDeck();
+            }, 350);
+        });
+    }
 
     // ---- Touch: swipe right = skip, swipe left/down = previous,
     //      swipe up / double-tap = like -------------------------------------

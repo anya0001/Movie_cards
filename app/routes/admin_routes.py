@@ -5,7 +5,7 @@ from flask import (
     flash, current_app,
 )
 
-from ..models import db, Movie
+from ..models import db, Movie, GENRES
 
 admin = Blueprint("admin", __name__, template_folder="../templates/admin")
 
@@ -65,7 +65,8 @@ def _movie_from_form(movie):
     except ValueError:
         movie.rating = None
 
-    movie.genres = request.form.get("genres", "").strip()
+    selected_genres = [g for g in request.form.getlist("genres") if g in GENRES]
+    movie.genres = ", ".join(selected_genres)
     movie.director = request.form.get("director", "").strip()
     movie.cast = request.form.get("cast", "").strip()
     movie.trailer_url = request.form.get("trailer_url", "").strip()
@@ -81,7 +82,7 @@ def add_movie():
         db.session.commit()
         flash(f'"{movie.title}" was added to the deck.', "success")
         return redirect(url_for("admin.dashboard"))
-    return render_template("admin/add-movie.html", movie=None)
+    return render_template("admin/add-movie.html", movie=None, all_genres=GENRES)
 
 
 @admin.route("/movie/<int:movie_id>/edit", methods=["GET", "POST"])
@@ -93,7 +94,7 @@ def edit_movie(movie_id):
         db.session.commit()
         flash(f'"{movie.title}" was updated.', "success")
         return redirect(url_for("admin.dashboard"))
-    return render_template("admin/add-movie.html", movie=movie)
+    return render_template("admin/add-movie.html", movie=movie, all_genres=GENRES)
 
 
 @admin.route("/movie/<int:movie_id>/delete", methods=["POST"])

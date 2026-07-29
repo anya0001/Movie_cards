@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Categories | MovieCards{% endblock %}
+
+{% block background %}
+{% include "includes/background.html" %}
+{% endblock %}
+
+{% block header %}
+{% include "includes/header.html" %}
+{% endblock %}
+
+{% block content %}
+<main class="categories-page">
+
+    <aside class="categories-sidebar">
+        <h2>Categories</h2>
+        <ul class="genre-list" id="genreList">
+            <li><button type="button" class="genre-item is-active" data-genre="">All</button></li>
+            {% for g in all_genres %}
+            <li><button type="button" class="genre-item" data-genre="{{ g }}">{{ g }}</button></li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <section class="categories-main">
+        <div class="categories-toolbar">
+            <h3 id="categoriesHeading">All Movies</h3>
+            <button type="button" class="shuffle-btn" id="shuffleBtn" title="Shuffle order">
+                <i class="fa-solid fa-shuffle"></i>
+            </button>
+        </div>
+
+        <div class="liked-grid" id="categoriesGrid"></div>
+
+        <div class="liked-empty" id="categoriesEmpty" hidden>
+            <p>No movies in this category yet.</p>
+        </div>
+    </section>
+
+    <div class="liked-overlay is-hidden" id="likedOverlay">
+        <div class="liked-overlay-backdrop"></div>
+        <div class="liked-overlay-stage">
+            <div class="card" id="likedDetailCard">
+                <div class="card-inner">
+                    <div class="card-face card-front"></div>
+                    <div class="card-face card-back"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="trailer-modal is-hidden" id="trailerModal">
+        <div class="trailer-modal-backdrop" data-action="close-trailer"></div>
+        <div class="trailer-modal-content">
+            <button type="button" class="trailer-modal-close" data-action="close-trailer" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="trailer-modal-frame">
+                <iframe id="trailerIframe" src="" title="Trailer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/card-template.js') }}"></script>
+<script src="{{ url_for('static', filename='js/categories.js') }}"></script>
+{% endblock %}

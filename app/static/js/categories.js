@@ -1,12 +1,13 @@
 (function () {
     "use strict";
 
-    const { loadMovieIntoCard } = window.MovieCardTemplate;
+    const { loadMovieIntoCard, setHeartState } = window.MovieCardTemplate;
 
-    const grid = document.getElementById("likedGrid");
-    const emptyState = document.getElementById("likedEmpty");
-    const emptyStateText = emptyState ? emptyState.querySelector("p") : null;
-    const emptyStateLink = emptyState ? emptyState.querySelector("a") : null;
+    const grid = document.getElementById("categoriesGrid");
+    const emptyState = document.getElementById("categoriesEmpty");
+    const heading = document.getElementById("categoriesHeading");
+    const shuffleBtn = document.getElementById("shuffleBtn");
+    const genreList = document.getElementById("genreList");
 
     const searchInput = document.getElementById("siteSearchInput");
 
@@ -18,13 +19,14 @@
     const trailerIframe = document.getElementById("trailerIframe");
 
     let movies = [];
+    let activeGenre = "";
     let activeSourceEl = null;
     let overlayBusy = false;
 
     function thumbHTML(movie) {
         return `
             <img src="${movie.poster_url}" alt="${movie.title}" loading="lazy">
-            <button type="button" class="unlike-btn" data-action="unlike" title="Remove from watchlist">
+            <button type="button" class="cat-like-btn${movie.liked ? " is-liked" : ""}" data-action="toggle-like" title="${movie.liked ? "Remove from watchlist" : "Add to watchlist"}">
                 <i class="fa-solid fa-heart"></i>
             </button>
             <div class="liked-info">
@@ -37,50 +39,91 @@
     function visibleMovies() {
         const q = searchInput ? searchInput.value.trim().toLowerCase() : "";
         return movies.filter((movie) => {
+            if (activeGenre && !(movie.genres || []).includes(activeGenre)) return false;
             if (q && !movie.title.toLowerCase().includes(q)) return false;
             return true;
         });
     }
 
     function render() {
-        if (movies.length === 0) {
-            grid.innerHTML = "";
-            if (emptyStateText) emptyStateText.textContent = "Nothing here yet — go like a few movies!";
-            if (emptyStateLink) emptyStateLink.hidden = false;
-            emptyState.hidden = false;
-            return;
-        }
-
         const shown = visibleMovies();
+
         if (shown.length === 0) {
             grid.innerHTML = "";
-            if (emptyStateText) emptyStateText.textContent = "No movies match your search.";
-            if (emptyStateLink) emptyStateLink.hidden = true;
             emptyState.hidden = false;
             return;
         }
 
         emptyState.hidden = true;
         grid.innerHTML = shown
-            .map((movie) => `<div class="liked-card" data-id="${movie.id}">${thumbHTML(movie)}</div>`)
+            .map((movie) => `<div class="liked-card cat-card" data-id="${movie.id}">${thumbHTML(movie)}</div>`)
             .join("");
     }
 
-    async function loadLiked() {
-        const res = await fetch("/api/liked");
-        movies = await res.json(); // already ordered most-recently-added-first by the server
+    async function loadMovies() {
+        const res = await fetch("/api/movies/all");
+        movies = await res.json();
         render();
     }
 
-    function removeMovie(movieId) {
-        movies = movies.filter((m) => String(m.id) !== String(movieId));
+    function setGenre(genre) {
+        activeGenre = genre;
+        genreList.querySelectorAll(".genre-item").forEach((btn) => {
+            btn.classList.toggle("is-active", btn.dataset.genre === genre);
+        });
+        heading.textContent = genre ? genre + " Movies" : "All Movies";
         render();
     }
 
-    // ---- Detail overlay — expands the clicked thumbnail into a full,
-    //      flippable deck-style card, using a FLIP animation so it visually
-    //      grows out of the spot it was clicked from, leaving that grid slot
-    //      blank behind a faded black backdrop. ------------------------------
+    function shuffleVisible() {
+        // Shuffle only the movies currently in view, in place within the
+        // full `movies` array, so the filter stays applied after shuffling.
+        const shownIds = new Set(visibleMovies().map((m) => m.id));
+        const shownMovies = movies.filter((m) => shownIds.has(m.id));
+        for (let i = shownMovies.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shownMovies[i], shownMovies[j]] = [shownMovies[j], shownMovies[i]];
+        }
+        let cursor = 0;
+        movies = movies.map((m) => (shownIds.has(m.id) ? shownMovies[cursor++] : m));
+        render();
+
+        shuffleBtn.classList.remove("spin");
+        void shuffleBtn.offsetWidth;
+        shuffleBtn.classList.add("spin");
+    }
+
+    function setLikedState(movieId, liked) {
+        const movie = movies.find((m) => String(m.id) === String(movieId));
+        if (movie) movie.liked = liked;
+
+        const card = grid.querySelector(`.cat-card[data-id="${movieId}"]`);
+        if (card) {
+            const btn = card.querySelector(".cat-like-btn");
+            if (btn) {
+                btn.classList.toggle("is-liked", liked);
+                btn.title = liked ? "Remove from watchlist" : "Add to watchlist";
+            }
+        }
+
+        if (activeSourceEl && String(activeSourceEl.dataset.id) === String(movieId)) {
+            setHeartState(detailCard, liked);
+        }
+    }
+
+    async function toggleLike(movieId) {
+        const movie = movies.find((m) => String(m.id) === String(movieId));
+        if (!movie) return;
+        const nextLiked = !movie.liked;
+        setLikedState(movieId, nextLiked);
+        try {
+            await fetch(`/api/movies/${movieId}/${nextLiked ? "like" : "unlike"}`, { method: "POST" });
+        } catch (err) {
+            // network hiccup — local state stays as the user's intent, harmless either way
+        }
+    }
+
+    // ---- Detail overlay — same expand-in-place pattern as the watchlist ----
 
     function openTrailer(embedUrl) {
         trailerIframe.src = embedUrl + (embedUrl.includes("?") ? "&" : "?") + "autoplay=1";
@@ -98,7 +141,7 @@
 
         loadMovieIntoCard(detailCard, movie);
         activeSourceEl = sourceEl;
-        sourceEl.classList.add("is-source-active"); // leaves a blank slot behind
+        sourceEl.classList.add("is-source-active");
 
         overlay.classList.remove("is-hidden");
         detailCard.style.transition = "none";
@@ -114,7 +157,7 @@
         detailCard.style.opacity = "0.5";
 
         requestAnimationFrame(() => {
-            void detailCard.offsetWidth; // commit the starting transform before animating
+            void detailCard.offsetWidth;
             detailCard.style.transition =
                 "transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.35s ease";
             detailCard.style.transform = "translate(0, 0) scale(1, 1)";
@@ -163,30 +206,19 @@
         }, 420);
     }
 
-    async function unlikeFromDetail(movieId) {
-        try {
-            await fetch(`/api/movies/${movieId}/unlike`, { method: "POST" });
-        } catch (err) {
-            // ignore network errors — still leaves the watchlist locally
-        }
-        removeMovie(movieId);
-        closeDetail();
-    }
-
     grid.addEventListener("click", (e) => {
-        const unlikeBtn = e.target.closest('[data-action="unlike"]');
-        const card = e.target.closest(".liked-card");
+        const likeBtn = e.target.closest('[data-action="toggle-like"]');
+        const card = e.target.closest(".cat-card");
         if (!card) return;
         const movieId = card.dataset.id;
 
-        if (unlikeBtn) {
-            fetch(`/api/movies/${movieId}/unlike`, { method: "POST" }).catch(() => {});
-            removeMovie(movieId);
+        if (likeBtn) {
+            toggleLike(movieId);
             return;
         }
 
         const movie = movies.find((m) => String(m.id) === String(movieId));
-        if (movie) openDetail(Object.assign({}, movie, { liked: true }), card);
+        if (movie) openDetail(movie, card);
     });
 
     detailCard.addEventListener("click", (e) => {
@@ -196,7 +228,7 @@
         const activeId = activeSourceEl ? activeSourceEl.dataset.id : null;
 
         if (action === "toggle-like") {
-            if (activeId) unlikeFromDetail(activeId);
+            if (activeId) toggleLike(activeId);
         } else if (action === "flip-info") {
             detailCard.classList.add("flipped");
         } else if (action === "flip-front") {
@@ -222,7 +254,14 @@
         }
     });
 
+    genreList.addEventListener("click", (e) => {
+        const btn = e.target.closest(".genre-item");
+        if (!btn) return;
+        setGenre(btn.dataset.genre || "");
+    });
+
+    if (shuffleBtn) shuffleBtn.addEventListener("click", shuffleVisible);
     if (searchInput) searchInput.addEventListener("input", render);
 
-    loadLiked();
+    loadMovies();
 })();

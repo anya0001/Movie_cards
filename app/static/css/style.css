@@ -197,6 +197,40 @@ body {
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
+.header .header-search {
+  flex: 1 1 auto;
+  max-width: 360px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 201, 153, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.header .header-search:focus-within {
+  border-color: rgba(232, 201, 153, 0.45);
+  background: rgba(255, 255, 255, 0.1);
+}
+.header .header-search i {
+  color: rgba(248, 238, 223, 0.5);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.header .header-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: white;
+  font-size: 13.5px;
+}
+.header .header-search input::placeholder {
+  color: rgba(248, 238, 223, 0.4);
+}
 .header .actions {
   flex: 0 0 auto;
   display: flex;
@@ -259,10 +293,14 @@ body {
     padding: 0 14px;
   }
   .header .logo .logo-word {
-    font-size: 15px;
+    display: none;
+  }
+  .header .header-search {
+    max-width: none;
+    padding: 7px 12px;
   }
   .header .actions {
-    gap: 12px;
+    gap: 10px;
   }
   .header .actions .nav-link {
     font-size: 13px;
@@ -324,6 +362,56 @@ body {
 /* =======================
    DECK PAGE LAYOUT
 ======================= */
+.deck-filters {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.deck-filters .search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(232, 201, 153, 0.2);
+  background: rgba(255, 163, 163, 0.08);
+  color: white;
+  outline: none;
+}
+.deck-filters .search-box i {
+  color: rgba(248, 238, 223, 0.5);
+  font-size: 0.85rem;
+}
+.deck-filters .search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: white;
+  font-size: 0.88rem;
+}
+.deck-filters .search-box input::placeholder {
+  color: rgba(248, 238, 223, 0.45);
+}
+.deck-filters select#genreSelect {
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(232, 201, 153, 0.2);
+  background: rgba(255, 163, 163, 0.08);
+  color: white;
+  outline: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  max-width: 130px;
+}
+.deck-filters select#genreSelect option {
+  background: #000000;
+  color: white;
+}
+
 .deck-page {
   min-height: 100dvh;
   display: flex;
@@ -984,6 +1072,10 @@ body {
   font-size: 0.9rem;
   margin-bottom: 34px;
 }
+.liked-page .liked-filters {
+  max-width: 480px;
+  margin: -18px 0 28px;
+}
 
 .liked-grid {
   display: grid;
@@ -1184,6 +1276,11 @@ body {
   font-size: 13px;
   margin-bottom: 6px;
   color: rgba(248, 238, 223, 0.85);
+}
+.form-group .label-hint {
+  font-weight: 400;
+  opacity: 0.6;
+  font-size: 12px;
 }
 .form-group input,
 .form-group textarea,
@@ -1498,5 +1595,146 @@ input[type=file]::-webkit-file-upload-button:hover {
 @media (max-width: 480px) {
   .admin-dashboard {
     padding: 92px 14px 40px;
+  }
+}
+
+/* =======================
+   CATEGORIES PAGE
+======================= */
+.categories-page {
+  min-height: 100vh;
+  padding: 100px 24px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.categories-sidebar {
+  position: sticky;
+  top: 92px;
+}
+.categories-sidebar h2 {
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 14px;
+}
+.categories-sidebar .genre-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.categories-sidebar .genre-item {
+  width: 100%;
+  text-align: left;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: rgba(248, 238, 223, 0.7);
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.categories-sidebar .genre-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+}
+.categories-sidebar .genre-item.is-active {
+  background: #8E1616;
+  color: white;
+  font-weight: 600;
+}
+
+.categories-main {
+  min-width: 0;
+}
+
+.categories-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.categories-toolbar h3 {
+  color: white;
+  font-size: 1.3rem;
+}
+.categories-toolbar .shuffle-btn {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 201, 153, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  color: #E8C999;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.categories-toolbar .shuffle-btn:hover {
+  background: #8E1616;
+  color: white;
+  border-color: #8E1616;
+}
+.categories-toolbar .shuffle-btn.spin i {
+  animation: shuffleSpin 0.5s ease;
+}
+
+@keyframes shuffleSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cat-card .cat-like-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+.cat-card .cat-like-btn:hover {
+  transform: scale(1.08);
+}
+.cat-card .cat-like-btn.is-liked {
+  background: #8E1616;
+  color: white;
+}
+
+@media (max-width: 780px) {
+  .categories-page {
+    grid-template-columns: 1fr;
+  }
+  .categories-sidebar {
+    position: static;
+  }
+  .categories-sidebar .genre-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .categories-sidebar .genre-item {
+    width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .categories-page {
+    padding: 88px 16px 40px;
+    gap: 20px;
   }
 }

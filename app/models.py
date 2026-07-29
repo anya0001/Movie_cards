@@ -3,6 +3,17 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+# Fixed set of genres admins classify movies into. Keeping this as a closed
+# list (rather than free text) is what makes the category filter on the
+# public site actually work — every movie's genres are guaranteed to match
+# one of these labels.
+GENRES = [
+    "Action", "Adventure", "Animation", "Comedy", "Crime",
+    "Documentary", "Drama", "Family", "Fantasy", "History",
+    "Horror", "Music", "Mystery", "Romance", "Sci-Fi",
+    "Sport", "Thriller", "War", "Western",
+]
+
 
 def utcnow():
     return datetime.now(timezone.utc)

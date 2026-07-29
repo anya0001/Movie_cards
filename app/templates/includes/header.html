@@ -16,8 +16,17 @@
         <span class="logo-word">MovieCards</span>
     </a>
 
+    <div class="header-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="siteSearchInput" placeholder="Search movies…" autocomplete="off">
+    </div>
+
     <nav class="actions">
         <a href="{{ url_for('main.home') }}" class="nav-link {{ 'active' if request.endpoint == 'main.home' }}">Discover</a>
+
+        <a href="{{ url_for('main.categories_page') }}" class="icon-link {{ 'active' if request.endpoint == 'main.categories_page' }}" title="Categories">
+            <i class="fa-solid fa-layer-group"></i>
+        </a>
 
         <a href="{{ url_for('main.liked_page') }}" class="icon-link {{ 'active' if request.endpoint == 'main.liked_page' }}" title="Watchlist">
             <i class="fa-solid fa-heart"></i>

@@ -3,7 +3,7 @@ import random
 
 from flask import Blueprint, render_template, jsonify, request, make_response
 
-from ..models import db, Movie, Like
+from ..models import db, Movie, Like, GENRES
 
 main = Blueprint("main", __name__)
 
@@ -27,19 +27,54 @@ def ensure_session_cookie(response):
 
 @main.route("/")
 def home():
-    resp = make_response(render_template("index.html"))
+    resp = make_response(render_template("index.html", all_genres=GENRES))
     return ensure_session_cookie(resp)
 
 
 @main.route("/liked")
 def liked_page():
-    resp = make_response(render_template("liked.html"))
+    resp = make_response(render_template("liked.html", all_genres=GENRES))
+    return ensure_session_cookie(resp)
+
+
+@main.route("/categories")
+def categories_page():
+    resp = make_response(render_template("categories.html", all_genres=GENRES))
     return ensure_session_cookie(resp)
 
 
 @main.route("/api/movies")
 def api_movies():
-    """Return the deck of movies, shuffled, excluding ones already liked."""
+    """Return the deck of movies, shuffled, excluding ones already liked.
+    Optionally filtered by a title search (?q=) and/or a genre (?genre=)."""
+    session_id = get_session_id()
+    liked_ids = set()
+    if session_id:
+        liked_ids = {
+            row.movie_id for row in Like.query.filter_by(session_id=session_id).all()
+        }
+
+    query = request.args.get("q", "").strip().lower()
+    genre = request.args.get("genre", "").strip()
+
+    movies = Movie.query.order_by(Movie.id.asc()).all()
+    deck = []
+    for m in movies:
+        if m.id in liked_ids:
+            continue
+        if query and query not in m.title.lower():
+            continue
+        if genre and genre not in m.genre_list():
+            continue
+        deck.append(m.to_dict())
+    random.shuffle(deck)
+    return jsonify(deck)
+
+
+@main.route("/api/movies/all")
+def api_movies_all():
+    """Return every movie (unfiltered by like status), each tagged with
+    whether the current session has liked it. Used by the Categories page."""
     session_id = get_session_id()
     liked_ids = set()
     if session_id:
@@ -48,9 +83,12 @@ def api_movies():
         }
 
     movies = Movie.query.order_by(Movie.id.asc()).all()
-    deck = [m.to_dict() for m in movies if m.id not in liked_ids]
-    random.shuffle(deck)
-    return jsonify(deck)
+    out = []
+    for m in movies:
+        data = m.to_dict()
+        data["liked"] = m.id in liked_ids
+        out.append(data)
+    return jsonify(out)
 
 
 @main.route("/api/movies/<int:movie_id>/like", methods=["POST"])
