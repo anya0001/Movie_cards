@@ -16,20 +16,31 @@
         <span class="logo-word">MovieCards</span>
     </a>
 
-    <div class="header-search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="siteSearchInput" placeholder="Search movies…" autocomplete="off">
-    </div>
+    <form class="header-search" id="siteSearchForm" action="{{ url_for('main.categories_page') }}" method="GET" autocomplete="off">
+        <button type="submit" class="search-submit-btn" title="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <input type="text" name="q" id="siteSearchInput" placeholder="Search movies…" autocomplete="off">
+        <div class="search-suggestions is-hidden" id="searchSuggestions"></div>
+    </form>
 
     <nav class="actions">
-        <a href="{{ url_for('main.home') }}" class="nav-link {{ 'active' if request.endpoint == 'main.home' }}">Discover</a>
-
-        <a href="{{ url_for('main.categories_page') }}" class="icon-link {{ 'active' if request.endpoint == 'main.categories_page' }}" title="Categories">
-            <i class="fa-solid fa-layer-group"></i>
+        <a href="{{ url_for('main.home') }}" class="nav-link {{ 'active' if request.endpoint == 'main.home' }}">
+            <i class="fa-solid fa-compass"></i><span class="nav-label">Discover</span>
         </a>
 
-        <a href="{{ url_for('main.liked_page') }}" class="icon-link {{ 'active' if request.endpoint == 'main.liked_page' }}" title="Watchlist">
-            <i class="fa-solid fa-heart"></i>
+        <a href="{{ url_for('main.categories_page') }}" class="nav-link {{ 'active' if request.endpoint == 'main.categories_page' }}">
+            <i class="fa-solid fa-layer-group"></i><span class="nav-label">Categories</span>
         </a>
+
+        <a href="{{ url_for('main.liked_page') }}" class="nav-link {{ 'active' if request.endpoint == 'main.liked_page' }}">
+            <i class="fa-solid fa-heart"></i><span class="nav-label">Watchlist</span>
+        </a>
+
+        {% if session.get('is_admin') %}
+        <a href="{{ url_for('admin.dashboard') }}" class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('admin.') }}">
+            <i class="fa-solid fa-gauge"></i><span class="nav-label">Dashboard</span>
+        </a>
+        {% endif %}
     </nav>
 </header>

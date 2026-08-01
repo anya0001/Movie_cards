@@ -91,6 +91,40 @@ def api_movies_all():
     return jsonify(out)
 
 
+@main.route("/api/movies/suggest")
+def api_movies_suggest():
+    """Lightweight autocomplete endpoint — top title matches for the search
+    dropdown, ranked so titles starting with the query come first."""
+    query = request.args.get("q", "").strip().lower()
+    if not query:
+        return jsonify([])
+
+    limit = min(int(request.args.get("limit", 8) or 8), 20)
+
+    movies = Movie.query.order_by(Movie.title.asc()).all()
+    starts_with = []
+    contains = []
+    for m in movies:
+        title_lower = m.title.lower()
+        if query not in title_lower:
+            continue
+        if title_lower.startswith(query):
+            starts_with.append(m)
+        else:
+            contains.append(m)
+
+    results = (starts_with + contains)[:limit]
+    return jsonify([
+        {
+            "id": m.id,
+            "title": m.title,
+            "year": m.year,
+            "poster_url": m.poster_url,
+        }
+        for m in results
+    ])
+
+
 @main.route("/api/movies/<int:movie_id>/like", methods=["POST"])
 def like_movie(movie_id):
     movie = Movie.query.get_or_404(movie_id)

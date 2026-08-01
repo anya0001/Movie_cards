@@ -41,6 +41,7 @@
     }
 
     .header-search {
+        position: relative;
         flex: 1 1 auto;
         max-width: 360px;
         min-width: 0;
@@ -58,10 +59,21 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        i {
+        .search-submit-btn {
+            flex-shrink: 0;
+            border: none;
+            background: none;
+            padding: 0;
             color: rgba(248, 238, 223, 0.5);
             font-size: 13px;
-            flex-shrink: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: variables.$main_light_color;
+            }
         }
 
         input {
@@ -77,69 +89,167 @@
                 color: rgba(248, 238, 223, 0.4);
             }
         }
+
+        .search-suggestions {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            right: 0;
+            z-index: 20;
+            background: rgba(10, 4, 4, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(232, 201, 153, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            max-height: 284px;
+            scrollbar-width: thin;
+            scrollbar-color: variables.$main_red transparent;
+
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: variables.$main_red;
+                border-radius: 10px;
+            }
+
+            &.is-hidden {
+                display: none !important;
+            }
+        }
+    }
+
+    .search-suggestion-list {
+        list-style: none;
+    }
+
+    .search-suggestion {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 14px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+
+        img {
+            flex-shrink: 0;
+            width: 36px;
+            height: 54px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .suggestion-text {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .suggestion-title {
+            font-size: 13.5px;
+            color: variables.$main_dark_color;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            mark {
+                background: none;
+                color: variables.$main_light_color;
+                font-weight: 700;
+            }
+        }
+
+        .suggestion-year {
+            font-size: 12px;
+            color: rgba(248, 238, 223, 0.5);
+        }
+
+        &.is-active,
+        &:hover {
+            background: rgba(232, 201, 153, 0.1);
+        }
+    }
+
+    .search-no-suggestions {
+        padding: 16px;
+        text-align: center;
+        font-size: 13px;
+        color: rgba(248, 238, 223, 0.5);
     }
 
     .actions {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 6px;
 
         .nav-link {
             position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
             font-size: 14px;
             font-weight: 500;
             color: variables.$main_light_color;
             text-decoration: none;
-            padding: 6px 2px;
-            transition: color 0.3s ease;
+            padding: 8px 10px;
+            border-radius: 999px;
+            transition: color 0.2s ease, background 0.2s ease;
             white-space: nowrap;
+
+            i {
+                font-size: 14px;
+                width: 15px;
+                text-align: center;
+            }
 
             &:hover {
                 color: white;
+                background: rgba(255, 255, 255, 0.06);
             }
 
             &.active {
                 color: white;
+                background: rgba(232, 201, 153, 0.12);
             }
 
             &.active::after {
                 content: "";
                 position: absolute;
-                left: 0;
-                bottom: -6px;
-                width: 100%;
+                left: 10px;
+                right: 10px;
+                bottom: 2px;
                 height: 2px;
-                background: white;
+                background: variables.$main_red;
                 border-radius: 999px;
             }
         }
+    }
+}
 
-        .icon-link {
-            width: 38px;
-            height: 38px;
-            flex-shrink: 0;
-            border-radius: 50%;
-            background: variables.$main_light_color;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: variables.$main_red;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+@media (max-width: 640px) {
+    .header {
+        .actions {
+            gap: 2px;
 
-            &:hover {
-                transform: scale(1.08);
-                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-            }
+            .nav-link {
+                padding: 8px;
 
-            &.active {
-                box-shadow: 0 0 0 2px variables.$main_red, 0 4px 12px rgba(0, 0, 0, 0.3);
-            }
+                .nav-label {
+                    display: none;
+                }
 
-            i {
-                font-size: 15px;
+                i {
+                    font-size: 15px;
+                }
             }
         }
     }
@@ -156,6 +266,10 @@
         .header-search {
             max-width: none;
             padding: 7px 12px;
+
+            .search-suggestions {
+                max-height: min(60vh, 284px);
+            }
         }
 
         .actions {

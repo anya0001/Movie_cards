@@ -11,7 +11,6 @@
     const btnLike = document.getElementById("btnLike");
     const btnRestart = document.getElementById("btnRestart");
 
-    const searchInput = document.getElementById("siteSearchInput");
     const deckEmptyTitle = deckEmpty ? deckEmpty.querySelector("h3") : null;
     const deckEmptyText = deckEmpty ? deckEmpty.querySelector("p") : null;
 
@@ -92,21 +91,14 @@
         btnLike.title = liked ? "Remove from watchlist" : "Add to watchlist";
     }
 
-    function hasActiveFilters() {
-        return !!(searchInput && searchInput.value.trim());
-    }
-
     async function loadDeck() {
         deckLoading.classList.remove("is-hidden");
         cardA.classList.add("is-hidden");
         cardB.classList.add("is-hidden");
         deckEmpty.classList.add("is-hidden");
 
-        const params = new URLSearchParams();
-        if (searchInput && searchInput.value.trim()) params.set("q", searchInput.value.trim());
-
         try {
-            const res = await fetch(`/api/movies${params.toString() ? "?" + params.toString() : ""}`);
+            const res = await fetch("/api/movies");
             order = await res.json();
         } catch (err) {
             order = [];
@@ -118,13 +110,8 @@
 
         if (order.length === 0) {
             if (deckEmptyTitle && deckEmptyText) {
-                if (hasActiveFilters()) {
-                    deckEmptyTitle.textContent = "No movies match";
-                    deckEmptyText.textContent = "Try a different search or genre.";
-                } else {
-                    deckEmptyTitle.textContent = "You've reached the end of the deck";
-                    deckEmptyText.textContent = "You've gone through every movie we've got right now. Check your watchlist, or start over.";
-                }
+                deckEmptyTitle.textContent = "You've reached the end of the deck";
+                deckEmptyText.textContent = "You've gone through every movie we've got right now. Check your watchlist, or start over.";
             }
             showEmpty();
             return;
@@ -287,36 +274,46 @@
         advance(exitAnimFn || ((el) => runExitAnimation(el, "flying-like")), "up");
     }
 
-    // ---- Heart badge on the card itself — a direct like/unlike toggle that
-    //      never moves the card. Independent from the skip/like swipe
-    //      gestures below, which advance the card off the deck.
-    async function toggleLikeOnCard(el) {
+    // ---- Heart badge on the card, and the bottom Like button, both funnel
+    //      through here now: liking always plays the same "card flies up"
+    //      animation as double-tap/swipe-up. Unliking (tapping an already-
+    //      liked heart) stays a quiet, in-place correction — it doesn't make
+    //      sense to fly the card away when you're just undoing a mistake.
+    function likeFromCard(el, x, y) {
+        if (busy || isExhausted() || el !== frontEl()) return;
+        const movie = order[pointer];
+        if (!movie || movie.liked) return;
+
+        if (typeof x === "number") {
+            spawnHeart(x, y);
+        } else {
+            const heartBtn = el.querySelector(".like-heart");
+            const rect = (heartBtn || btnLike).getBoundingClientRect();
+            spawnHeart(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        }
+
+        likeCurrent((cardEl) => runExitAnimation(cardEl, "flying-like"));
+    }
+
+    async function quietUnlike(el) {
         if (!el || el !== frontEl()) return;
         const movie = order[pointer];
-        if (!movie) return;
+        if (!movie || !movie.liked) return;
 
-        const nextLiked = !movie.liked;
-        movie.liked = nextLiked;
-        setHeartState(el, nextLiked);
-
-        btnLike.classList.toggle("is-liked", nextLiked);
-        btnLike.title = nextLiked ? "Remove from watchlist" : "Add to watchlist";
+        movie.liked = false;
+        setHeartState(el, false);
+        btnLike.classList.remove("is-liked");
+        btnLike.title = "Add to watchlist";
 
         const heartBtn = el.querySelector(".like-heart");
         if (heartBtn) {
             heartBtn.classList.remove("pop");
             void heartBtn.offsetWidth;
             heartBtn.classList.add("pop");
-            if (nextLiked) {
-                const rect = heartBtn.getBoundingClientRect();
-                spawnHeart(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            }
         }
 
         try {
-            await fetch(`/api/movies/${movie.id}/${nextLiked ? "like" : "unlike"}`, {
-                method: "POST",
-            });
+            await fetch(`/api/movies/${movie.id}/unlike`, { method: "POST" });
         } catch (err) {
             // ignore network errors — local state already reflects the tap
         }
@@ -359,7 +356,12 @@
         const el = frontEl();
 
         if (action === "toggle-like") {
-            toggleLikeOnCard(el);
+            const movie = order[pointer];
+            if (movie && movie.liked) {
+                quietUnlike(el);
+            } else {
+                likeFromCard(el);
+            }
         } else if (action === "flip-info") {
             el.classList.add("flipped");
         } else if (action === "flip-front") {
@@ -401,30 +403,14 @@
     btnPrev.addEventListener("click", prevAction);
     btnLike.addEventListener("click", () => {
         if (busy || isExhausted()) return;
-        btnLike.classList.remove("pop");
-        void btnLike.offsetWidth;
-        btnLike.classList.add("pop");
-
-        const willLike = !(order[pointer] && order[pointer].liked);
-        if (willLike) {
-            const rect = btnLike.getBoundingClientRect();
-            spawnHeart(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        const movie = order[pointer];
+        if (movie && movie.liked) {
+            quietUnlike(frontEl());
+        } else {
+            likeFromCard(frontEl());
         }
-        toggleLikeOnCard(frontEl());
     });
     if (btnRestart) btnRestart.addEventListener("click", loadDeck);
-
-    // ---- Search — refetch the deck whenever it changes ----
-
-    let searchDebounceTimer = null;
-    if (searchInput) {
-        searchInput.addEventListener("input", () => {
-            clearTimeout(searchDebounceTimer);
-            searchDebounceTimer = setTimeout(() => {
-                if (!busy) loadDeck();
-            }, 350);
-        });
-    }
 
     // ---- Touch: swipe right = skip, swipe left/down = previous,
     //      swipe up / double-tap = like -------------------------------------

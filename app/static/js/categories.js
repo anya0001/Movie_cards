@@ -20,6 +20,7 @@
 
     let movies = [];
     let activeGenre = "";
+    let activeQuery = new URLSearchParams(window.location.search).get("q") || "";
     let activeSourceEl = null;
     let overlayBusy = false;
 
@@ -37,7 +38,7 @@
     }
 
     function visibleMovies() {
-        const q = searchInput ? searchInput.value.trim().toLowerCase() : "";
+        const q = activeQuery.trim().toLowerCase();
         return movies.filter((movie) => {
             if (activeGenre && !(movie.genres || []).includes(activeGenre)) return false;
             if (q && !movie.title.toLowerCase().includes(q)) return false;
@@ -45,11 +46,44 @@
         });
     }
 
+    function updateHeading() {
+        if (activeQuery) {
+            heading.textContent = `Search results for \u201c${activeQuery}\u201d`;
+        } else {
+            heading.textContent = activeGenre ? activeGenre + " Movies" : "All Movies";
+        }
+    }
+
+    function renderEmptyState() {
+        if (activeQuery) {
+            emptyState.innerHTML = `
+                <p>No movies found for &ldquo;${activeQuery}&rdquo;.</p>
+                <p class="empty-suggestion">Check the spelling, try a shorter word, or browse a category instead.</p>
+                <button type="button" class="clear-search-btn" id="clearSearchBtn">Clear search</button>
+            `;
+            const clearBtn = document.getElementById("clearSearchBtn");
+            if (clearBtn) clearBtn.addEventListener("click", clearSearch);
+        } else {
+            emptyState.innerHTML = `<p>No movies in this category yet.</p>`;
+        }
+    }
+
+    function clearSearch() {
+        activeQuery = "";
+        if (searchInput) searchInput.value = "";
+        const url = new URL(window.location.href);
+        url.searchParams.delete("q");
+        window.history.replaceState({}, "", url);
+        updateHeading();
+        render();
+    }
+
     function render() {
         const shown = visibleMovies();
 
         if (shown.length === 0) {
             grid.innerHTML = "";
+            renderEmptyState();
             emptyState.hidden = false;
             return;
         }
@@ -63,15 +97,23 @@
     async function loadMovies() {
         const res = await fetch("/api/movies/all");
         movies = await res.json();
+        if (searchInput && activeQuery) searchInput.value = activeQuery;
+        updateHeading();
         render();
     }
 
     function setGenre(genre) {
         activeGenre = genre;
+        activeQuery = ""; // browsing a category exits "search results" mode
+        if (searchInput) searchInput.value = "";
+        const url = new URL(window.location.href);
+        url.searchParams.delete("q");
+        window.history.replaceState({}, "", url);
+
         genreList.querySelectorAll(".genre-item").forEach((btn) => {
             btn.classList.toggle("is-active", btn.dataset.genre === genre);
         });
-        heading.textContent = genre ? genre + " Movies" : "All Movies";
+        updateHeading();
         render();
     }
 
@@ -261,7 +303,6 @@
     });
 
     if (shuffleBtn) shuffleBtn.addEventListener("click", shuffleVisible);
-    if (searchInput) searchInput.addEventListener("input", render);
 
     loadMovies();
 })();

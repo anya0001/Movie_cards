@@ -19,8 +19,13 @@
         </a>
     </div>
 
+    <div class="admin-table-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="adminTableSearch" placeholder="Search this list…" autocomplete="off">
+    </div>
+
     <div class="admin-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" id="adminTable">
             <thead>
                 <tr>
                     <th></th>
@@ -33,12 +38,12 @@
             </thead>
             <tbody>
                 {% for movie in movies %}
-                <tr>
-                    <td><img class="poster-thumb" src="{{ movie.poster_url }}" alt=""></td>
-                    <td>{{ movie.title }}</td>
-                    <td>{{ movie.year or "—" }}</td>
-                    <td>{{ movie.genres }}</td>
-                    <td>{{ movie.rating or "—" }}</td>
+                <tr data-id="{{ movie.id }}" data-title="{{ movie.title|lower }}">
+                    <td><img class="poster-thumb" src="{{ movie.poster_url }}" alt="" data-action="view"></td>
+                    <td class="title-cell" data-action="view">{{ movie.title }}</td>
+                    <td data-action="view">{{ movie.year or "—" }}</td>
+                    <td data-action="view">{{ movie.genres }}</td>
+                    <td data-action="view">{{ movie.rating or "—" }}</td>
                     <td>
                         <div class="row-actions">
                             <a href="{{ url_for('admin.edit_movie', movie_id=movie.id) }}" title="Edit">
@@ -60,8 +65,37 @@
                 {% endfor %}
             </tbody>
         </table>
+        <p class="admin-table-no-results" id="adminTableNoResults" hidden>No movies match your search.</p>
+    </div>
+
+    <div class="liked-overlay is-hidden" id="adminOverlay">
+        <div class="liked-overlay-backdrop"></div>
+        <div class="liked-overlay-stage">
+            <div class="card" id="adminDetailCard">
+                <div class="card-inner">
+                    <div class="card-face card-front"></div>
+                    <div class="card-face card-back"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="trailer-modal is-hidden" id="trailerModal">
+        <div class="trailer-modal-backdrop" data-action="close-trailer"></div>
+        <div class="trailer-modal-content">
+            <button type="button" class="trailer-modal-close" data-action="close-trailer" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="trailer-modal-frame">
+                <iframe id="trailerIframe" src="" title="Trailer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+        </div>
     </div>
 </main>
 {% endblock %}
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/card-template.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-dashboard.js') }}"></script>
+{% endblock %}

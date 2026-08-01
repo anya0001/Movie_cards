@@ -3,65 +3,54 @@
 
     const { loadMovieIntoCard } = window.MovieCardTemplate;
 
-    const grid = document.getElementById("likedGrid");
-    const emptyState = document.getElementById("likedEmpty");
-    const emptyStateText = emptyState ? emptyState.querySelector("p") : null;
-    const emptyStateLink = emptyState ? emptyState.querySelector("a") : null;
+    const searchInput = document.getElementById("adminTableSearch");
+    const table = document.getElementById("adminTable");
+    const noResults = document.getElementById("adminTableNoResults");
+    const rows = table ? Array.from(table.querySelectorAll("tbody tr[data-id]")) : [];
 
-    const overlay = document.getElementById("likedOverlay");
+    const overlay = document.getElementById("adminOverlay");
     const overlayBackdrop = overlay ? overlay.querySelector(".liked-overlay-backdrop") : null;
-    const detailCard = document.getElementById("likedDetailCard");
+    const detailCard = document.getElementById("adminDetailCard");
 
     const trailerModal = document.getElementById("trailerModal");
     const trailerIframe = document.getElementById("trailerIframe");
 
-    let movies = [];
+    let moviesById = {};
     let activeSourceEl = null;
     let overlayBusy = false;
 
-    function thumbHTML(movie) {
-        return `
-            <img src="${movie.poster_url}" alt="${movie.title}" loading="lazy">
-            <button type="button" class="unlike-btn" data-action="unlike" title="Remove from watchlist">
-                <i class="fa-solid fa-heart"></i>
-            </button>
-            <div class="liked-info">
-                <h4>${movie.title}</h4>
-                <span>${movie.year || ""}</span>
-            </div>
-        `;
+    // ---- Mini search — filters the table rows in place. This is a small,
+    //      page-local tool (not the global header search), so live filtering
+    //      as you type is the expected, standard behavior here. -------------
+
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            const q = searchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            rows.forEach((row) => {
+                const match = !q || row.dataset.title.includes(q);
+                row.hidden = !match;
+                if (match) visibleCount += 1;
+            });
+
+            if (noResults) noResults.hidden = visibleCount > 0 || rows.length === 0;
+        });
     }
 
-    function render() {
-        if (movies.length === 0) {
-            grid.innerHTML = "";
-            if (emptyStateText) emptyStateText.textContent = "Nothing here yet — go like a few movies!";
-            if (emptyStateLink) emptyStateLink.hidden = false;
-            emptyState.hidden = false;
-            return;
+    // ---- "Viewable" rows — click a movie to preview exactly how it looks
+    //      to users on the deck, using the same FLIP-style expand animation
+    //      as the watchlist page. --------------------------------------------
+
+    async function loadAllMovies() {
+        try {
+            const res = await fetch("/api/movies/all");
+            const data = await res.json();
+            data.forEach((m) => { moviesById[m.id] = m; });
+        } catch (err) {
+            moviesById = {};
         }
-
-        emptyState.hidden = true;
-        grid.innerHTML = movies
-            .map((movie) => `<div class="liked-card" data-id="${movie.id}">${thumbHTML(movie)}</div>`)
-            .join("");
     }
-
-    async function loadLiked() {
-        const res = await fetch("/api/liked");
-        movies = await res.json(); // already ordered most-recently-added-first by the server
-        render();
-    }
-
-    function removeMovie(movieId) {
-        movies = movies.filter((m) => String(m.id) !== String(movieId));
-        render();
-    }
-
-    // ---- Detail overlay — expands the clicked thumbnail into a full,
-    //      flippable deck-style card, using a FLIP animation so it visually
-    //      grows out of the spot it was clicked from, leaving that grid slot
-    //      blank behind a faded black backdrop. ------------------------------
 
     function openTrailer(embedUrl) {
         trailerIframe.src = embedUrl + (embedUrl.includes("?") ? "&" : "?") + "autoplay=1";
@@ -77,9 +66,9 @@
         if (overlayBusy) return;
         overlayBusy = true;
 
-        loadMovieIntoCard(detailCard, movie);
+        loadMovieIntoCard(detailCard, Object.assign({}, movie, { liked: false }));
         activeSourceEl = sourceEl;
-        sourceEl.classList.add("is-source-active"); // leaves a blank slot behind
+        sourceEl.classList.add("is-source-active");
 
         overlay.classList.remove("is-hidden");
         detailCard.style.transition = "none";
@@ -95,7 +84,7 @@
         detailCard.style.opacity = "0.5";
 
         requestAnimationFrame(() => {
-            void detailCard.offsetWidth; // commit the starting transform before animating
+            void detailCard.offsetWidth;
             detailCard.style.transition =
                 "transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.35s ease";
             detailCard.style.transform = "translate(0, 0) scale(1, 1)";
@@ -103,9 +92,7 @@
             overlay.classList.add("is-visible");
         });
 
-        setTimeout(() => {
-            overlayBusy = false;
-        }, 500);
+        setTimeout(() => { overlayBusy = false; }, 500);
     }
 
     function closeDetail() {
@@ -144,48 +131,34 @@
         }, 420);
     }
 
-    async function unlikeFromDetail(movieId) {
-        try {
-            await fetch(`/api/movies/${movieId}/unlike`, { method: "POST" });
-        } catch (err) {
-            // ignore network errors — still leaves the watchlist locally
-        }
-        removeMovie(movieId);
-        closeDetail();
+    if (table) {
+        table.addEventListener("click", (e) => {
+            const cell = e.target.closest('[data-action="view"]');
+            if (!cell) return;
+            const row = e.target.closest("tr[data-id]");
+            if (!row) return;
+
+            const movie = moviesById[row.dataset.id];
+            if (movie) openDetail(movie, cell);
+        });
     }
-
-    grid.addEventListener("click", (e) => {
-        const unlikeBtn = e.target.closest('[data-action="unlike"]');
-        const card = e.target.closest(".liked-card");
-        if (!card) return;
-        const movieId = card.dataset.id;
-
-        if (unlikeBtn) {
-            fetch(`/api/movies/${movieId}/unlike`, { method: "POST" }).catch(() => {});
-            removeMovie(movieId);
-            return;
-        }
-
-        const movie = movies.find((m) => String(m.id) === String(movieId));
-        if (movie) openDetail(Object.assign({}, movie, { liked: true }), card);
-    });
 
     detailCard.addEventListener("click", (e) => {
         const target = e.target.closest("[data-action]");
         if (!target) return;
         const action = target.dataset.action;
-        const activeId = activeSourceEl ? activeSourceEl.dataset.id : null;
 
-        if (action === "toggle-like") {
-            if (activeId) unlikeFromDetail(activeId);
-        } else if (action === "flip-info") {
+        if (action === "flip-info") {
             detailCard.classList.add("flipped");
         } else if (action === "flip-front") {
             detailCard.classList.remove("flipped");
         } else if (action === "show-trailer") {
-            const movie = movies.find((m) => String(m.id) === String(activeId));
+            const row = activeSourceEl ? activeSourceEl.closest("tr[data-id]") : null;
+            const movie = row ? moviesById[row.dataset.id] : null;
             if (movie && movie.trailer_embed_url) openTrailer(movie.trailer_embed_url);
         }
+        // toggle-like is intentionally a no-op here — this is a preview of
+        // how the card looks to users, not a real watchlist action.
     });
 
     if (overlayBackdrop) overlayBackdrop.addEventListener("click", closeDetail);
@@ -203,5 +176,5 @@
         }
     });
 
-    loadLiked();
+    loadAllMovies();
 })();

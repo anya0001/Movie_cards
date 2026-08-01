@@ -104,6 +104,22 @@
     }
 }
 
+.liked-empty {
+    .empty-suggestion {
+        font-size: 0.82rem;
+        opacity: 0.7;
+        margin-top: 6px;
+    }
+
+    .clear-search-btn {
+        @include pill-button(variables.$main_red, white);
+        margin-top: 18px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+}
+
 .cat-card .cat-like-btn {
     position: absolute;
     top: 10px;

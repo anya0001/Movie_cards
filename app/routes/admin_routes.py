@@ -29,7 +29,7 @@ def login():
             and password == current_app.config["ADMIN_PASSWORD"]
         ):
             session["is_admin"] = True
-            next_url = request.args.get("next") or url_for("admin.dashboard")
+            next_url = request.args.get("next") or url_for("main.home")
             return redirect(next_url)
         flash("Invalid username or password.", "error")
     return render_template("admin/login.html")
